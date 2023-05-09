@@ -16,7 +16,10 @@ fn main() -> ExitCode {
             println!("\x1b[1;31merror:\x1b[0m {e}");
             ExitCode::FAILURE
         }
-        _ => ExitCode::SUCCESS,
+        _ => {
+            print!("\x1b[0m");
+            ExitCode::SUCCESS
+        }
     }
 }
 
