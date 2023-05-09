@@ -14,13 +14,10 @@ use crate::local::find_foreign_packages;
 fn main() -> ExitCode {
     match run() {
         Err(e) => {
-            println!("\x1b[1;31merror:\x1b[0m {e}");
+            eprintln!("\x1b[1;31merror:\x1b[0m {e}");
             ExitCode::FAILURE
         }
-        _ => {
-            print!("\x1b[0m");
-            ExitCode::SUCCESS
-        }
+        _ => ExitCode::SUCCESS,
     }
 }
 
@@ -94,5 +91,6 @@ fn run() -> R<()> {
         }
     }
 
+    print!("\x1b[0m");
     Ok(())
 }

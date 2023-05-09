@@ -27,7 +27,7 @@ pub fn find_foreign_packages(
     )?;
 
     alpm.set_event_cb(0, |e, _| if let Event::DatabaseMissing(event) = e.event() {
-        println!("\x1b[1;33mwarning:\x1b[0m database file for '{}' does not exist (use 'pacman -Sy' to download)", event.dbname());
+        eprintln!("\x1b[1;33mwarning:\x1b[0m database file for '{}' does not exist (use 'pacman -Sy' to download)", event.dbname());
     });
 
     let mut repos = Vec::new();
