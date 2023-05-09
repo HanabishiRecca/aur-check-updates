@@ -15,7 +15,10 @@ fn get_config_option<'a>(
         .map(|s| s.as_str())
 }
 
-pub fn find_foreign_packages() -> R<Vec<(String, String)>> {
+pub fn find_foreign_packages(
+    ignore_group: Option<&str>,
+    ignore_ends: Option<&str>,
+) -> R<Vec<(String, String)>> {
     let config = Ini::new_cs().load("/etc/pacman.conf")?;
 
     let alpm = Alpm::new(
@@ -42,8 +45,15 @@ pub fn find_foreign_packages() -> R<Vec<(String, String)>> {
         .into_iter()
         .filter_map(|pkg| {
             let name = pkg.name();
-            if name.ends_with('-') {
-                return None;
+            if let Some(e) = ignore_ends {
+                if name.ends_with(e) {
+                    return None;
+                }
+            }
+            if let Some(g) = ignore_group {
+                if pkg.groups().into_iter().any(|n| n == g) {
+                    return None;
+                }
             }
             if repos.iter().any(|db| db.pkg(name).is_ok()) {
                 return None;

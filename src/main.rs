@@ -4,10 +4,11 @@ mod local;
 
 use alpm::vercmp;
 use std::cmp::Ordering;
+use std::env;
 use std::process::ExitCode;
 
 use crate::aur::request_updates;
-use crate::error::R;
+use crate::error::{ArgError, R};
 use crate::local::find_foreign_packages;
 
 fn main() -> ExitCode {
@@ -30,9 +31,33 @@ enum Status {
 }
 
 fn run() -> R<()> {
+    let mut ignore_group = None;
+    let mut ignore_ends = None;
+    let mut args = env::args().skip(1);
+
+    while let Some(arg) = args.next() {
+        macro_rules! next {
+            () => {
+                match args.next() {
+                    Some(value) => value,
+                    _ => E!(ArgError::NoValue(arg)),
+                }
+            };
+        }
+        match arg.as_str() {
+            "--ignore-group" => {
+                ignore_group = Some(next!());
+            }
+            "--ignore-ends" => {
+                ignore_ends = Some(next!());
+            }
+            _ => E!(ArgError::Unknown(arg)),
+        }
+    }
+
     println!("\x1b[1;34m::\x1b[0;1m Checking AUR updates...");
 
-    let pkgs = find_foreign_packages()?;
+    let pkgs = find_foreign_packages(ignore_group.as_deref(), ignore_ends.as_deref())?;
     if pkgs.is_empty() {
         println!("\x1b[0m no packages to check");
         return Ok(());
