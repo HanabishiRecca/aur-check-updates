@@ -77,6 +77,7 @@ impl From<JsonError> for Error {
 #[derive(Debug)]
 pub enum ArgError {
     NoValue(String),
+    InvalidValue(String, String),
     Unknown(String),
 }
 
@@ -87,6 +88,7 @@ impl fmt::Display for ArgError {
         use ArgError::*;
         match self {
             NoValue(arg) => write!(f, "option '{arg}' requires value"),
+            InvalidValue(arg, value) => write!(f, "invalid value '{value}' for option '{arg}'"),
             Unknown(arg) => write!(f, "unknown option '{arg}'"),
         }
     }

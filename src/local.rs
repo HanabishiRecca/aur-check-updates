@@ -2,7 +2,7 @@ use alpm::{Alpm, Event, SigLevel};
 use configparser::ini::Ini;
 use std::collections::HashMap;
 
-use crate::error::R;
+use crate::{error::R, print};
 
 fn get_config_option<'a>(
     config: &'a HashMap<String, HashMap<String, Option<String>>>,
@@ -26,8 +26,13 @@ pub fn find_foreign_packages(
         get_config_option(&config, "DBPath").unwrap_or("/var/lib/pacman"),
     )?;
 
-    alpm.set_event_cb(0, |e, _| if let Event::DatabaseMissing(event) = e.event() {
-        eprintln!("\x1b[1;33mwarning:\x1b[0m database file for '{}' does not exist (use 'pacman -Sy' to download)", event.dbname());
+    alpm.set_event_cb(0, |e, _| {
+        if let Event::DatabaseMissing(event) = e.event() {
+            print::warning(format_args!(
+                "database file for '{}' does not exist (use 'pacman -Sy' to download)",
+                event.dbname()
+            ))
+        }
     });
 
     let mut repos = Vec::new();
