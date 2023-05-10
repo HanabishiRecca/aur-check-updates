@@ -19,18 +19,32 @@ Example:
 
 ## Options
 
-### `--ignore-group <group>`
+### `--ignoregroup <group>`
 
-Ignore packages in a specified group.
+Do not check updates for all packages in a `group`.  
+Multiple groups can be specified by separating them with a comma.
 
-### `--ignore-ends <suffix>`
+Example to ignore packages in `custom` group:
 
-Ignore packages with names ending in a specified string.
+    $ aur-checkupdates --ignoregroup "custom"
+
+### `--ignoresuffix <suffix>`
+
+Do not check updates for all packages with names ending in a `suffix`.  
+Multiple suffixes can be specified by separating them with a comma.
+
+Example to ignore packages with `-custom` suffix:
+
+    $ aur-checkupdates --ignoresuffix "-custom"
 
 ### `--color <when>`
 
 Specify when to enable coloring. Valid options are `always`, `never`, or `auto`.  
 Default value `auto` only enables colors when outputting onto a tty.
+
+Example to disable coloring:
+
+    $ aur-checkupdates --color never
 
 ## Dependencies
 
