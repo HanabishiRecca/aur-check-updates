@@ -24,8 +24,8 @@ fn main() -> ExitCode {
 }
 
 fn run() -> R<()> {
+    let mut ignores = Vec::new();
     let mut ignore_groups = Vec::new();
-    let mut ignore_suffixes = Vec::new();
     let mut args = env::args().skip(1);
 
     while let Some(arg) = args.next() {
@@ -38,11 +38,11 @@ fn run() -> R<()> {
             };
         }
         match arg.as_str() {
+            "--ignore" => {
+                ignores.extend(next!().split(',').map(String::from));
+            }
             "--ignoregroup" => {
                 ignore_groups.extend(next!().split(',').map(String::from));
-            }
-            "--ignoresuffix" => {
-                ignore_suffixes.extend(next!().split(',').map(String::from));
             }
             "--color" => {
                 let value = next!();
@@ -59,5 +59,5 @@ fn run() -> R<()> {
     }
 
     print::header(format_args!("Checking AUR updates..."));
-    check_updates(find_foreign_packages(ignore_groups, ignore_suffixes)?)
+    check_updates(find_foreign_packages(ignores, ignore_groups)?)
 }

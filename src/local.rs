@@ -16,8 +16,8 @@ fn get_config_option<'a>(
 }
 
 pub fn find_foreign_packages(
+    ignores: Vec<String>,
     ignore_groups: Vec<String>,
-    ignore_suffixes: Vec<String>,
 ) -> R<Vec<(String, String)>> {
     let config = Ini::new_cs().load("/etc/pacman.conf")?;
 
@@ -48,7 +48,7 @@ pub fn find_foreign_packages(
 
     for pkg in alpm.localdb().pkgs() {
         let name = pkg.name();
-        if !ignore_suffixes.is_empty() && ignore_suffixes.iter().any(|s| name.ends_with(s)) {
+        if !ignores.is_empty() && ignores.iter().any(|s| name == s) {
             continue;
         }
         if !ignore_groups.is_empty() {
