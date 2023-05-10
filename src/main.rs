@@ -31,8 +31,8 @@ enum Status {
 }
 
 fn run() -> R<()> {
-    let mut ignore_group = None;
-    let mut ignore_ends = None;
+    let mut ignore_groups = Vec::new();
+    let mut ignore_suffixes = Vec::new();
     let mut args = env::args().skip(1);
 
     while let Some(arg) = args.next() {
@@ -45,11 +45,11 @@ fn run() -> R<()> {
             };
         }
         match arg.as_str() {
-            "--ignore-group" => {
-                ignore_group = Some(next!());
+            "--ignoregroup" => {
+                ignore_groups.extend(next!().split(',').map(String::from));
             }
-            "--ignore-ends" => {
-                ignore_ends = Some(next!());
+            "--ignoresuffix" => {
+                ignore_suffixes.extend(next!().split(',').map(String::from));
             }
             "--color" => {
                 let value = next!();
@@ -67,7 +67,7 @@ fn run() -> R<()> {
 
     print::header(format_args!("Checking AUR updates..."));
 
-    let pkgs = find_foreign_packages(ignore_group.as_deref(), ignore_ends.as_deref())?;
+    let pkgs = find_foreign_packages(ignore_groups, ignore_suffixes)?;
     if pkgs.is_empty() {
         print::message(format_args!("no packages to check"));
         return Ok(());

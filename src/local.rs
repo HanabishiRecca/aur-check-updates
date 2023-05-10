@@ -16,8 +16,8 @@ fn get_config_option<'a>(
 }
 
 pub fn find_foreign_packages(
-    ignore_group: Option<&str>,
-    ignore_ends: Option<&str>,
+    ignore_groups: Vec<String>,
+    ignore_suffixes: Vec<String>,
 ) -> R<Vec<(String, String)>> {
     let config = Ini::new_cs().load("/etc/pacman.conf")?;
 
@@ -44,26 +44,24 @@ pub fn find_foreign_packages(
         repos.push(alpm.register_syncdb(s.as_str(), SigLevel::NONE)?);
     }
 
-    Ok(alpm
-        .localdb()
-        .pkgs()
-        .into_iter()
-        .filter_map(|pkg| {
-            let name = pkg.name();
-            if let Some(e) = ignore_ends {
-                if name.ends_with(e) {
-                    return None;
-                }
+    let mut pkgs = Vec::new();
+
+    for pkg in alpm.localdb().pkgs() {
+        let name = pkg.name();
+        if !ignore_suffixes.is_empty() && ignore_suffixes.iter().any(|s| name.ends_with(s)) {
+            continue;
+        }
+        if !ignore_groups.is_empty() {
+            let groups = pkg.groups();
+            if ignore_groups.iter().any(|s| groups.iter().any(|g| g == s)) {
+                continue;
             }
-            if let Some(g) = ignore_group {
-                if pkg.groups().into_iter().any(|n| n == g) {
-                    return None;
-                }
-            }
-            if repos.iter().any(|db| db.pkg(name).is_ok()) {
-                return None;
-            }
-            Some((name.to_string(), pkg.version().to_string()))
-        })
-        .collect())
+        }
+        if repos.iter().any(|db| db.pkg(name).is_ok()) {
+            continue;
+        }
+        pkgs.push((name.to_string(), pkg.version().to_string()));
+    }
+
+    Ok(pkgs)
 }
