@@ -1,13 +1,8 @@
 # aur-checkupdates
 
-Very basic CLI app for checking updates from **Arch User Repository** (AUR).
+A very basic CLI app for checking updates from **Arch User Repository** (AUR).
 
-This app does **not**:
-
--   build packages
--   account VCS updates
-
-The only goal is a simple AUR version check, nothing more.  
+The app is designed to perform only this simple task, so it does **not** build packages nor pull VCS updates.  
 If you need a full-featured AUR helper, consider using [`paru`](https://github.com/morganamilo/paru) instead.
 
 Example:
@@ -19,23 +14,23 @@ Example:
 
 ## Options
 
+### `--ignore <package>`
+
+Do not check updates for a package.  
+Multiple packages can be specified by separating them with a comma.
+
+Example to ignore `foo` package:
+
+    $ aur-checkupdates --ignore foo
+
 ### `--ignoregroup <group>`
 
-Do not check updates for all packages in a `group`.  
+Do not check updates for packages in a group.  
 Multiple groups can be specified by separating them with a comma.
 
 Example to ignore packages in `custom` group:
 
-    $ aur-checkupdates --ignoregroup "custom"
-
-### `--ignoresuffix <suffix>`
-
-Do not check updates for all packages with names ending in a `suffix`.  
-Multiple suffixes can be specified by separating them with a comma.
-
-Example to ignore packages with `-custom` suffix:
-
-    $ aur-checkupdates --ignoresuffix "-custom"
+    $ aur-checkupdates --ignoregroup custom
 
 ### `--color <when>`
 
