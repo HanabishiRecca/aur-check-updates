@@ -43,5 +43,9 @@ Example to disable coloring:
 
 ## Dependencies
 
--   `libalpm` >= 13
--   `libcurl` >= 7.24
+-   `libalpm`
+-   `libcurl`
+
+## Packages
+
+[`aur-check-updates`](https://aur.archlinux.org/packages/aur-check-updates)<sup>AUR</sup>
