@@ -1,4 +1,4 @@
-# aur-checkupdates
+# aur-check-updates
 
 A very basic CLI app for checking updates from **Arch User Repository** (AUR).
 
@@ -7,7 +7,7 @@ If you need a full-featured AUR helper, consider using [`paru`](https://github.c
 
 Example:
 
-    $ aur-checkupdates
+    $ aur-check-updates
     :: Checking AUR updates...
     foo 1.0.0 => 2.0.0
     bar is not in AUR
@@ -21,7 +21,7 @@ Multiple packages can be specified by separating them with a comma.
 
 Example to ignore `foo` package:
 
-    $ aur-checkupdates --ignore foo
+    $ aur-check-updates --ignore foo
 
 ### `--ignoregroup <group>`
 
@@ -30,7 +30,7 @@ Multiple groups can be specified by separating them with a comma.
 
 Example to ignore packages in `custom` group:
 
-    $ aur-checkupdates --ignoregroup custom
+    $ aur-check-updates --ignoregroup custom
 
 ### `--color <when>`
 
@@ -39,7 +39,7 @@ Default value `auto` only enables colors when outputting onto a tty.
 
 Example to disable coloring:
 
-    $ aur-checkupdates --color never
+    $ aur-check-updates --color never
 
 ## Dependencies
 
