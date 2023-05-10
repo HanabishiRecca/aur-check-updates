@@ -1,14 +1,13 @@
 mod aur;
+mod check;
 mod error;
 mod local;
 mod print;
 
-use alpm::vercmp;
-use std::cmp::Ordering;
 use std::env;
 use std::process::ExitCode;
 
-use crate::aur::request_updates;
+use crate::check::check_updates;
 use crate::error::{ArgError, R};
 use crate::local::find_foreign_packages;
 use crate::print::ColorMode;
@@ -22,12 +21,6 @@ fn main() -> ExitCode {
         }
         _ => ExitCode::SUCCESS,
     }
-}
-
-enum Status {
-    UpToDate,
-    HasUpdate(String, String, String),
-    NotInAUR(String),
 }
 
 fn run() -> R<()> {
@@ -66,47 +59,5 @@ fn run() -> R<()> {
     }
 
     print::header(format_args!("Checking AUR updates..."));
-
-    let pkgs = find_foreign_packages(ignore_groups, ignore_suffixes)?;
-    if pkgs.is_empty() {
-        print::message(format_args!("no packages to check"));
-        return Ok(());
-    }
-
-    let mut updates = request_updates(pkgs.iter().map(|(name, _)| name.as_str()))?;
-
-    use Status::*;
-    let stat: Vec<_> = pkgs
-        .into_iter()
-        .map(|(name, ver)| match updates.remove(name.as_str()) {
-            Some(new_ver) => match vercmp(new_ver.as_str(), ver.as_str()) {
-                Ordering::Greater => HasUpdate(name, ver, new_ver),
-                _ => UpToDate,
-            },
-            _ => NotInAUR(name),
-        })
-        .collect();
-
-    let count = stat
-        .iter()
-        .filter(|s| matches!(s, HasUpdate(_, _, _)))
-        .count();
-
-    if count == 0 {
-        print::message(format_args!("no updates"));
-    }
-
-    for s in stat {
-        match s {
-            HasUpdate(name, ver, new_ver) => print::update(
-                format_args!("{name}"),
-                format_args!("{ver}"),
-                format_args!("{new_ver}"),
-            ),
-            NotInAUR(name) => print::package(format_args!("{name}"), format_args!("is not in AUR")),
-            _ => {}
-        }
-    }
-
-    Ok(())
+    check_updates(find_foreign_packages(ignore_groups, ignore_suffixes)?)
 }
