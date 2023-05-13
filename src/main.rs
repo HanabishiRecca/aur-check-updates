@@ -4,6 +4,7 @@ mod error;
 mod local;
 mod print;
 
+use std::collections::HashSet;
 use std::env;
 use std::process::ExitCode;
 
@@ -24,8 +25,8 @@ fn main() -> ExitCode {
 }
 
 fn run() -> R<()> {
-    let mut ignores = Vec::new();
-    let mut ignore_groups = Vec::new();
+    let mut ignores = HashSet::new();
+    let mut ignore_groups = HashSet::new();
     let mut args = env::args().skip(1);
 
     while let Some(arg) = args.next() {

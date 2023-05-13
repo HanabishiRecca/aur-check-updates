@@ -13,6 +13,18 @@ enum Status {
 
 use Status::*;
 
+fn print_status(status: Status) {
+    match status {
+        HasUpdate(name, ver, new_ver) => print::update(
+            format_args!("{name}"),
+            format_args!("{ver}"),
+            format_args!("{new_ver}"),
+        ),
+        NotInAUR(name) => print::package(format_args!("{name}"), format_args!("is not in AUR")),
+        _ => {}
+    }
+}
+
 pub fn check_updates(pkgs: Vec<(String, String)>) -> R<()> {
     if pkgs.is_empty() {
         print::message(format_args!("no packages to check"));
@@ -41,17 +53,6 @@ pub fn check_updates(pkgs: Vec<(String, String)>) -> R<()> {
         print::message(format_args!("no updates"));
     }
 
-    for s in stat {
-        match s {
-            HasUpdate(name, ver, new_ver) => print::update(
-                format_args!("{name}"),
-                format_args!("{ver}"),
-                format_args!("{new_ver}"),
-            ),
-            NotInAUR(name) => print::package(format_args!("{name}"), format_args!("is not in AUR")),
-            _ => {}
-        }
-    }
-
+    stat.into_iter().for_each(print_status);
     Ok(())
 }
