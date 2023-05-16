@@ -2,15 +2,15 @@
 
 A very basic CLI app for checking updates from **Arch User Repository** (AUR).
 
-The app is designed to perform only this simple task, so it does **not** build packages nor pull VCS updates.  
-If you need a full-featured AUR helper, consider using [`paru`](https://github.com/morganamilo/paru) instead.
-
 Example:
 
     $ aur-check-updates
     :: Checking AUR updates...
     foo 1.0.0 => 2.0.0
     bar is not in AUR
+
+The app is designed to perform only this simple task, so it does **not** build packages nor pull VCS updates.  
+If you need a fully-featured AUR helper, consider using [`paru`](https://github.com/morganamilo/paru) instead.
 
 ## Options
 
