@@ -36,13 +36,15 @@ fn request(url: &str) -> R<String> {
     Ok(String::from_utf8(result)?)
 }
 
-pub fn request_updates<'a>(pkgs: impl Iterator<Item = &'a str>) -> R<HashMap<String, String>> {
+pub fn request_updates<'a>(
+    pkgs: impl Iterator<Item = &'a (String, String)>,
+) -> R<HashMap<String, String>> {
     let url: String = ["https://aur.archlinux.org/rpc/v5/info?"]
         .into_iter()
-        .chain(pkgs.flat_map(|name| ["&arg[]=", name].into_iter()))
+        .chain(pkgs.flat_map(|(name, _)| ["&arg[]=", name].into_iter()))
         .collect();
 
-    Ok(from_str::<Response>(request(url.as_str())?.as_str())?
+    Ok(from_str::<Response>(&request(&url)?)?
         .results
         .into_iter()
         .map(|Pkg { name, ver }| (name, ver))

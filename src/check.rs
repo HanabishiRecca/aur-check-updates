@@ -29,7 +29,7 @@ fn print_status(status: Status) {
 
 fn gen_state(pkgs: Vec<(String, String)>, mut updates: HashMap<String, String>) -> Vec<Status> {
     pkgs.into_iter()
-        .map(|(name, ver)| match updates.remove(name.as_str()) {
+        .map(|(name, ver)| match updates.remove(&name) {
             Some(new_ver) => match vercmp(new_ver.as_str(), ver.as_str()) {
                 Greater => HasUpdate(name, ver, new_ver),
                 _ => UpToDate,
@@ -52,7 +52,7 @@ pub fn check_updates(pkgs: Vec<(String, String)>) -> R<()> {
         return Ok(());
     }
 
-    let updates = request_updates(pkgs.iter().map(|(name, _)| name.as_str()))?;
+    let updates = request_updates(pkgs.iter())?;
     let state = gen_state(pkgs, updates);
 
     if count_updates(&state) == 0 {
