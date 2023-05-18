@@ -56,6 +56,21 @@ fn run() -> R<()> {
                     _ => E!(ArgError::InvalidValue(arg, value)),
                 });
             }
+            "-h" | "--help" => {
+                println!(
+                    "usage:  aur-check-updates [options]
+
+options:
+      --ignore <package>       do not check updates for a package
+      --ignoregroup <group>    do not check updates for packages in a group
+      --color <when>           colorize the output (always, never, auto)
+  -h, --help                   display this help and exit
+
+Ignore options can be used more than once.
+Multiple packages/groups also can be specified by separating them with a comma."
+                );
+                return Ok(());
+            }
             _ => E!(ArgError::Unknown(arg)),
         }
     }
