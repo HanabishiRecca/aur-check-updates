@@ -41,6 +41,10 @@ Example to disable coloring:
 
     $ aur-check-updates --color never
 
+### `-h`, `--help`
+
+Display help message and exit.
+
 ## Dependencies
 
 -   `libalpm`
