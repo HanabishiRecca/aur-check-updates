@@ -2,6 +2,7 @@ mod aur;
 mod check;
 mod error;
 mod local;
+mod pacman_conf;
 mod print;
 
 use std::collections::HashSet;

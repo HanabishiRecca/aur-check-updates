@@ -1,7 +1,7 @@
 use alpm::Error as AlpmError;
 use curl::Error as CurlError;
 use serde_json::Error as JsonError;
-use std::{error, fmt, string::FromUtf8Error};
+use std::{error, fmt, io::Error as IOError, string::FromUtf8Error};
 
 #[macro_export]
 macro_rules! E {
@@ -38,7 +38,7 @@ macro_rules! Error {
 
 Error!(
     Arg(ArgError),
-    Plain(String),
+    IO(IOError),
     Alpm(AlpmError),
     Request(CurlError),
     Utf8(FromUtf8Error),

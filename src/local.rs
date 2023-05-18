@@ -1,19 +1,7 @@
-use alpm::{Alpm, Event, SigLevel};
-use configparser::ini::Ini;
-use std::collections::{HashMap, HashSet};
+use alpm::{Alpm, Error::DbNotNull, Event, SigLevel};
+use std::collections::HashSet;
 
-use crate::{error::R, print};
-
-fn get_config_option<'a>(
-    config: &'a HashMap<String, HashMap<String, Option<String>>>,
-    name: &str,
-) -> Option<&'a str> {
-    config
-        .get("options")?
-        .get(name)?
-        .as_ref()
-        .map(|s| s.as_str())
-}
+use crate::{error::R, pacman_conf::get_configuration, print};
 
 macro_rules! every {
     ($($e:expr),+ $(,)?) => {
@@ -25,12 +13,8 @@ pub fn find_foreign_packages(
     ignores: HashSet<String>,
     ignore_groups: HashSet<String>,
 ) -> R<Vec<(String, String)>> {
-    let config = Ini::new_cs().load("/etc/pacman.conf")?;
-
-    let alpm = Alpm::new(
-        "/",
-        get_config_option(&config, "DBPath").unwrap_or("/var/lib/pacman"),
-    )?;
+    let (dbpath, repos) = get_configuration()?;
+    let alpm = Alpm::new("/", dbpath.as_deref().unwrap_or("/var/lib/pacman"))?;
 
     alpm.set_event_cb((), |e, _| {
         if let Event::DatabaseMissing(event) = e.event() {
@@ -41,10 +25,12 @@ pub fn find_foreign_packages(
         }
     });
 
-    let repos = config
+    let repos = repos
         .into_iter()
-        .filter(|(s, _)| s != "options")
-        .map(|(s, _)| alpm.register_syncdb(s, SigLevel::NONE))
+        .filter_map(|repo| match alpm.register_syncdb(repo, SigLevel::NONE) {
+            Err(DbNotNull) => None,
+            r => Some(r),
+        })
         .collect::<Result<Vec<_>, _>>()?;
 
     Ok(alpm

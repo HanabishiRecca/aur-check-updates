@@ -8,7 +8,6 @@ panic = "abort"
 
 [dependencies]
 alpm = "2.2"
-configparser = "3.0"
 curl = "0.4"
 libc = "0.2"
 serde = { version = "1.0", features = ["derive"] }
