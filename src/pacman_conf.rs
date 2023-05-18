@@ -22,45 +22,44 @@ fn parse_option(s: &str) -> Option<(&str, &str)> {
         .map(|(name, value)| (name.trim(), value.trim()))
 }
 
-fn read_config(reader: impl BufRead) -> R<(Option<String>, Vec<String>)> {
+fn read_config(mut reader: impl BufRead) -> R<(Option<String>, Vec<String>)> {
+    let mut line = String::new();
+    let mut in_options = false;
     let mut dbpath = None;
-    let mut search = false;
+    let mut repos = Vec::new();
 
-    let repos = reader
-        .lines()
-        .filter_map(|line| {
-            let s = match line {
-                Ok(s) => s,
-                e => return Some(e),
-            };
+    loop {
+        line.clear();
 
-            if skip_line(&s) {
-                return None;
+        if reader.read_line(&mut line)? == 0 {
+            break;
+        }
+
+        if skip_line(&line) {
+            continue;
+        }
+
+        match parse_section(&line) {
+            Some("options") => {
+                in_options = true;
+                continue;
             }
-
-            match parse_section(&s) {
-                Some("options") => {
-                    search = true;
-                    return None;
-                }
-                Some(s) => {
-                    search = false;
-                    return Some(Ok(s.to_string()));
-                }
-                _ => {}
+            Some(s) => {
+                in_options = false;
+                repos.push(s.to_string());
+                continue;
             }
+            _ => {}
+        }
 
-            if !search {
-                return None;
-            }
+        if !in_options || dbpath.is_some() {
+            continue;
+        }
 
-            if let Some(("DBPath", value)) = parse_option(&s) {
-                dbpath = Some(value.to_string());
-            }
-
-            None
-        })
-        .collect::<Result<Vec<_>, _>>()?;
+        if let Some(("DBPath", value)) = parse_option(&line) {
+            dbpath = Some(value.to_string());
+        }
+    }
 
     Ok((dbpath, repos))
 }
@@ -85,18 +84,21 @@ mod tests {
             b"
 # /etc/pacman.conf
 # GENERAL OPTIONS
+#[options]
+DBPath = /not/in/section
+                            
+[core]
+DBPath = /core/fake/path
+Include = /etc/pacman.d/mirrorlist
+
     [options]    
 #foo
 RootDir = /
 #[foo]
-DBPath = /first/fake/path/
-    DBPath    =    /var/lib/pacman/    
-DBPaths = /wrong/option/name/
 #DBPath = /comment/fake/path/
-
-    [core]    
-DBPath = /core/fake/path
-Include = /etc/pacman.d/mirrorlist
+DBPaths = /wrong/option/name/
+    DBPath    =    /var/lib/pacman/    
+DBPath = /first/fake/path/
 
     [extra]    
 Include = /etc/pacman.d/mirrorlist
@@ -104,8 +106,8 @@ Include = /etc/pacman.d/mirrorlist
     [community]    
 Include = /etc/pacman.d/mirrorlist
 
-#[options]
-DBPath = /options/fake/path
+[options]
+DBPath = /second/fake/path
 ",
         ));
 
