@@ -80,37 +80,7 @@ mod tests {
 
     #[test]
     fn config() -> R<()> {
-        let reader = BufReader::new(Cursor::new(
-            b"
-# /etc/pacman.conf
-# GENERAL OPTIONS
-#[options]
-DBPath = /not/in/section
-                            
-[core]
-DBPath = /core/fake/path
-Include = /etc/pacman.d/mirrorlist
-
-    [options]    
-#foo
-RootDir = /
-#[foo]
-#DBPath = /comment/fake/path/
-DBPaths = /wrong/option/name/
-    DBPath    =    /var/lib/pacman/    
-DBPath = /first/fake/path/
-
-    [extra]    
-Include = /etc/pacman.d/mirrorlist
-
-    [community]    
-Include = /etc/pacman.d/mirrorlist
-
-[options]
-DBPath = /second/fake/path
-",
-        ));
-
+        let reader = BufReader::new(Cursor::new(include_bytes!("test_config.in")));
         let (dbpath, repos) = read_config(reader)?;
         assert_eq!(dbpath.as_deref(), Some("/var/lib/pacman/"));
         assert_eq!(repos, ["core", "extra", "community"]);
