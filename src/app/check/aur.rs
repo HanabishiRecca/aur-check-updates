@@ -3,7 +3,7 @@ use serde::Deserialize;
 use serde_json::from_str;
 use std::collections::HashMap;
 
-use crate::error::R;
+use crate::error::*;
 
 #[derive(Deserialize)]
 struct Response {

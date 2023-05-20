@@ -3,7 +3,7 @@ use std::{
     io::{BufRead, BufReader, Error as IOError},
 };
 
-use crate::error::R;
+use crate::error::*;
 
 fn get_file() -> Result<File, IOError> {
     File::open("/etc/pacman.conf")
@@ -69,21 +69,4 @@ pub fn get_configuration() -> R<(Option<String>, Vec<String>)> {
 }
 
 #[cfg(test)]
-mod tests {
-    use std::{
-        assert_eq,
-        io::{BufReader, Cursor},
-    };
-
-    use super::read_config;
-    use crate::error::R;
-
-    #[test]
-    fn config() -> R<()> {
-        let reader = BufReader::new(Cursor::new(include_bytes!("test_config.in")));
-        let (dbpath, repos) = read_config(reader)?;
-        assert_eq!(dbpath.as_deref(), Some("/var/lib/pacman/"));
-        assert_eq!(repos, ["core", "extra", "community"]);
-        Ok(())
-    }
-}
+mod tests;
