@@ -2,6 +2,7 @@ use std::{fmt::Arguments, sync::RwLock};
 
 static COLOR: RwLock<bool> = RwLock::new(false);
 
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub enum ColorMode {
     Auto,
     Always,

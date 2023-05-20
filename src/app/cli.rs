@@ -2,16 +2,25 @@ use std::collections::HashSet;
 
 use crate::{error::*, print::*, E};
 
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct Config {
     pub ignores: HashSet<String>,
     pub ignore_groups: HashSet<String>,
+    pub color_mode: ColorMode,
+}
+
+impl Config {
+    fn new() -> Self {
+        Config {
+            ignores: HashSet::new(),
+            ignore_groups: HashSet::new(),
+            color_mode: ColorMode::Auto,
+        }
+    }
 }
 
 pub fn read_args(mut args: impl Iterator<Item = String>) -> R<Option<Config>> {
-    let mut config = Config {
-        ignores: HashSet::new(),
-        ignore_groups: HashSet::new(),
-    };
+    let mut config = Config::new();
 
     while let Some(arg) = args.next() {
         macro_rules! next {
@@ -22,32 +31,37 @@ pub fn read_args(mut args: impl Iterator<Item = String>) -> R<Option<Config>> {
                 }
             };
         }
-        match arg.as_str() {
-            "--ignore" => {
-                config.ignores.extend(next!().split(',').map(String::from));
-            }
-            "--ignoregroup" => {
-                config
-                    .ignore_groups
-                    .extend(next!().split(',').map(String::from));
-            }
+        macro_rules! extend {
+            ($h:expr) => {
+                $h.extend(
+                    next!()
+                        .split(',')
+                        .map(|s| s.trim())
+                        .filter(|s| !s.is_empty())
+                        .map(String::from),
+                )
+            };
+        }
+        match arg.as_str().trim() {
+            "--ignore" => extend!(config.ignores),
+            "--ignoregroup" => extend!(config.ignore_groups),
             "--color" => {
                 let value = next!();
                 use ColorMode::*;
-                set_color_mode(match value.as_str() {
+                config.color_mode = match value.as_str().trim() {
                     "auto" => Auto,
                     "always" => Always,
                     "never" => Never,
                     _ => E!(ArgError::InvalidValue(arg, value)),
-                });
+                };
             }
-            "-h" | "--help" => {
-                println!(include_str!("help.in"));
-                return Ok(None);
-            }
+            "-h" | "--help" => return Ok(None),
             _ => E!(ArgError::Unknown(arg)),
         }
     }
 
     Ok(Some(config))
 }
+
+#[cfg(test)]
+mod tests;
