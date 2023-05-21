@@ -1,0 +1,2 @@
+[core]
+DBPath = /var/lib/pacman/
