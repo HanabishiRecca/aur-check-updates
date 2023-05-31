@@ -1,6 +1,9 @@
-use std::{fmt::Arguments, sync::RwLock};
+use std::{
+    fmt::Arguments,
+    sync::atomic::{AtomicBool, Ordering::Relaxed},
+};
 
-static COLOR: RwLock<bool> = RwLock::new(false);
+static COLOR: AtomicBool = AtomicBool::new(false);
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub enum ColorMode {
@@ -16,16 +19,19 @@ fn isatty() -> bool {
 
 pub fn set_color_mode(mode: ColorMode) {
     use ColorMode::*;
-    *COLOR.write().unwrap() = match mode {
-        Auto => isatty(),
-        Always => true,
-        Never => false,
-    };
+    COLOR.store(
+        match mode {
+            Auto => isatty(),
+            Always => true,
+            Never => false,
+        },
+        Relaxed,
+    );
 }
 
 macro_rules! print_to {
     ($p: ident, $pl: ident, $c: expr, $n: expr) => {{
-        match *COLOR.read().unwrap() {
+        match COLOR.load(Relaxed) {
             true => {
                 $p!($c);
                 $pl!("\x1b[0m");
