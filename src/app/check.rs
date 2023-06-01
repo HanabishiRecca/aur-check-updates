@@ -17,12 +17,8 @@ use Status::*;
 
 fn print_status(status: Status) {
     match status {
-        HasUpdate(name, ver, new_ver) => update(
-            format_args!("{name}"),
-            format_args!("{ver}"),
-            format_args!("{new_ver}"),
-        ),
-        NotInAUR(name) => package(format_args!("{name}"), format_args!("is not in AUR")),
+        HasUpdate(name, ver, new_ver) => print_update(name, ver, new_ver),
+        NotInAUR(name) => print_package(name, "is not in AUR"),
         _ => {}
     }
 }
@@ -49,7 +45,7 @@ fn count_updates(state: &[Status]) -> usize {
 
 pub fn check_updates(pkgs: Vec<(String, String)>) -> R<()> {
     if pkgs.is_empty() {
-        message(format_args!("no packages to check"));
+        print_message("no packages to check");
         return Ok(());
     }
 
@@ -57,7 +53,7 @@ pub fn check_updates(pkgs: Vec<(String, String)>) -> R<()> {
     let state = gen_state(pkgs, updates);
 
     if count_updates(&state) == 0 {
-        message(format_args!("no updates"));
+        print_message("no updates");
     }
 
     state.into_iter().for_each(print_status);

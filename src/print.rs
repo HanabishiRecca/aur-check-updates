@@ -1,5 +1,5 @@
 use std::{
-    fmt::Arguments,
+    fmt::Display,
     sync::atomic::{AtomicBool, Ordering::Relaxed},
 };
 
@@ -30,52 +30,49 @@ pub fn set_color_mode(mode: ColorMode) {
 }
 
 macro_rules! print_to {
-    ($p: ident, $pl: ident, $c: expr, $n: expr) => {{
+    ($p: ident, $n: expr, $c: expr) => {
         match COLOR.load(Relaxed) {
-            true => {
-                $p!($c);
-                $pl!("\x1b[0m");
-            }
-            false => $pl!($n),
-        };
-    }};
+            true => $p!($c),
+            false => $p!($n),
+        }
+    };
 }
 
 macro_rules! P {
-    ($c: expr, $n: expr $(,)?) => {
-        print_to!(print, println, $c, $n)
+    ($n: expr, $c: expr $(,)?) => {
+        print_to!(println, $n, $c)
     };
 }
 
-macro_rules! E {
-    ($c: expr, $n: expr $(,)?) => {
-        print_to!(eprint, eprintln, $c, $n)
+macro_rules! PE {
+    ($n: expr, $c: expr $(,)?) => {
+        print_to!(eprintln, $n, $c)
     };
 }
 
-pub fn header(s: Arguments) {
-    P!("\x1b[1;34m::\x1b[0;1m {s}", ":: {s}")
+pub fn print_header(s: impl Display) {
+    P!(":: {s}", "\x1b[1;34m::\x1b[0;1m {s}\x1b[0m");
 }
 
-pub fn message(s: Arguments) {
-    P!("\x1b[0m {s}", " {s}")
+pub fn print_message(s: impl Display) {
+    P!(" {s}", "\x1b[0m {s}\x1b[0m");
 }
 
-pub fn update(name: Arguments, ver: Arguments, new_ver: Arguments) {
+pub fn print_update(name: impl Display, ver: impl Display, new_ver: impl Display) {
     P!(
-        "\x1b[0;1m{name} \x1b[1;31m{ver}\x1b[0m => \x1b[1;32m{new_ver}",
-        "{name} {ver} => {new_ver}"
-    )
+        "{name} {ver} => {new_ver}",
+        "\x1b[0;1m{name} \x1b[1;31m{ver}\x1b[0m => \x1b[1;32m{new_ver}\x1b[0m",
+    );
 }
 
-pub fn package(name: Arguments, s: Arguments) {
-    P!("\x1b[0;1m{name}\x1b[0m {s}", "{name} {s}")
+pub fn print_package(name: impl Display, s: impl Display) {
+    P!("{name} {s}", "\x1b[0;1m{name}\x1b[0m {s}\x1b[0m");
 }
 
-pub fn error(e: Arguments) {
-    E!("\x1b[1;31merror:\x1b[0m {e}", "error: {e}")
+pub fn print_error(e: impl Display) {
+    PE!("error: {e}", "\x1b[1;31merror:\x1b[0m {e}\x1b[0m");
 }
 
-pub fn warning(w: Arguments) {
-    E!("\x1b[1;33mwarning:\x1b[0m {w}", "warning: {w}")
+pub fn print_warning(w: impl Display) {
+    PE!("warning: {w}", "\x1b[1;33mwarning:\x1b[0m {w}\x1b[0m");
 }

@@ -11,7 +11,7 @@ fn main() -> ExitCode {
     set_color_mode(ColorMode::Auto);
     match run_app() {
         Err(e) => {
-            error(format_args!("{e}"));
+            print_error(e);
             ExitCode::FAILURE
         }
         _ => ExitCode::SUCCESS,

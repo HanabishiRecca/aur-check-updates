@@ -21,7 +21,7 @@ pub fn find_foreign_packages(
 
     alpm.set_event_cb((), |e, _| {
         if let Event::DatabaseMissing(event) = e.event() {
-            warning(format_args!(
+            print_warning(format_args!(
                 "database file for '{}' does not exist (use 'pacman -Sy' to download)",
                 event.dbname()
             ))

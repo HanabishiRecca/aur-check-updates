@@ -15,7 +15,7 @@ fn run(
     }: Config,
 ) -> R<()> {
     set_color_mode(color_mode);
-    header(format_args!("Checking AUR updates..."));
+    print_header("Checking AUR updates...");
     check_updates(find_foreign_packages(ignores, ignore_groups)?)
 }
 
