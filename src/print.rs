@@ -1,5 +1,6 @@
 use std::{
     fmt::Display,
+    io::{stdout, IsTerminal},
     sync::atomic::{AtomicBool, Ordering::Relaxed},
 };
 
@@ -12,16 +13,11 @@ pub enum ColorMode {
     Never,
 }
 
-fn isatty() -> bool {
-    // SAFETY: This call should not have side effects.
-    unsafe { libc::isatty(libc::STDOUT_FILENO) == 1 }
-}
-
 pub fn set_color_mode(mode: ColorMode) {
     use ColorMode::*;
     COLOR.store(
         match mode {
-            Auto => isatty(),
+            Auto => stdout().is_terminal(),
             Always => true,
             Never => false,
         },

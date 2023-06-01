@@ -27,7 +27,6 @@ version = "1.0.3"
 dependencies = [
  "alpm",
  "curl",
- "libc",
  "serde",
  "serde_json",
 ]
