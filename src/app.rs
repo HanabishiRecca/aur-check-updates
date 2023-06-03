@@ -2,6 +2,8 @@ mod check;
 mod cli;
 mod local;
 
+use std::env::{args, current_exe};
+
 use crate::{
     error::R,
     print::{print_header, set_color_mode},
@@ -22,12 +24,19 @@ fn run(
     check_updates(find_foreign_packages(ignores, ignore_groups)?)
 }
 
+fn get_bin_name() -> Option<String> {
+    Some(String::from(current_exe().ok()?.file_name()?.to_str()?))
+}
+
 pub fn run_app() -> R<()> {
-    match read_args(std::env::args().skip(1))? {
-        Some(config) => run(config),
-        _ => {
-            println!(include_str!("app/help.in"));
-            Ok(())
-        }
+    if let Some(config) = read_args(args().skip(1))? {
+        return run(config);
     }
+
+    println!(
+        include_str!("app/help.in"),
+        BIN_NAME = get_bin_name().as_deref().unwrap_or(env!("CARGO_BIN_NAME")),
+    );
+
+    Ok(())
 }

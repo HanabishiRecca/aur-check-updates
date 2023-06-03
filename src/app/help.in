@@ -1,4 +1,4 @@
-usage:  aur-check-updates [options]
+usage:  {BIN_NAME} [options]
 
 options:
       --ignore <package>       do not check updates for a package
