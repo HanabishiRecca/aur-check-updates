@@ -1,4 +1,5 @@
 mod app;
+mod consts;
 mod error;
 mod print;
 

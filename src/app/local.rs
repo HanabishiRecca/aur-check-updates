@@ -3,7 +3,7 @@ mod pacman_conf;
 use alpm::{Alpm, Error::DbNotNull, Event, SigLevel};
 use std::collections::HashSet;
 
-use crate::{error::R, print::print_warning};
+use crate::{consts::DEFAULT_DBPATH, error::R, print::print_warning};
 use pacman_conf::get_configuration;
 
 macro_rules! every {
@@ -17,7 +17,7 @@ pub fn find_foreign_packages(
     ignore_groups: HashSet<String>,
 ) -> R<Vec<(String, String)>> {
     let (dbpath, repos) = get_configuration()?;
-    let alpm = Alpm::new("/", dbpath.as_deref().unwrap_or("/var/lib/pacman/"))?;
+    let alpm = Alpm::new("/", dbpath.as_deref().unwrap_or(DEFAULT_DBPATH))?;
 
     alpm.set_event_cb((), |e, _| {
         if let Event::DatabaseMissing(event) = e.event() {

@@ -3,10 +3,10 @@ use std::{
     io::{BufRead, BufReader, Error as IOError},
 };
 
-use crate::error::R;
+use crate::{consts::PACMAN_CONF, error::R};
 
 fn get_file() -> Result<File, IOError> {
-    File::open("/etc/pacman.conf")
+    File::open(PACMAN_CONF)
 }
 
 fn skip_line(s: &str) -> bool {

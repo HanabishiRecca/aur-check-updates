@@ -3,7 +3,7 @@ use serde::Deserialize;
 use serde_json::from_str;
 use std::collections::HashMap;
 
-use crate::error::R;
+use crate::{consts::AUR_ENDPOINT, error::R};
 
 #[derive(Deserialize)]
 struct Response {
@@ -39,7 +39,7 @@ fn request(url: &str) -> R<String> {
 pub fn request_updates<'a>(
     pkgs: impl Iterator<Item = &'a (String, String)>,
 ) -> R<HashMap<String, String>> {
-    let url: String = ["https://aur.archlinux.org/rpc/v5/info?"]
+    let url: String = [AUR_ENDPOINT, "?"]
         .into_iter()
         .chain(pkgs.flat_map(|(name, _)| ["&arg[]=", name].into_iter()))
         .collect();
