@@ -3,7 +3,7 @@ use std::{
     io::{BufRead, BufReader, Error as IOError},
 };
 
-use crate::error::*;
+use crate::error::R;
 
 fn get_file() -> Result<File, IOError> {
     File::open("/etc/pacman.conf")

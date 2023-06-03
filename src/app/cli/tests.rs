@@ -1,4 +1,11 @@
-use super::*;
+use std::collections::HashSet;
+
+use crate::{
+    error::{ArgError, Error, R},
+    print::ColorMode,
+};
+
+use super::{read_args, Config};
 
 macro_rules! S {
     ($s: expr) => {

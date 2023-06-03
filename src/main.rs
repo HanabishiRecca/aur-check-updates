@@ -4,8 +4,8 @@ mod print;
 
 use std::process::ExitCode;
 
-use app::*;
-use print::*;
+use app::run_app;
+use print::{print_error, set_color_mode, ColorMode};
 
 fn main() -> ExitCode {
     set_color_mode(ColorMode::Auto);

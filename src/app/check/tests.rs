@@ -1,4 +1,6 @@
-use super::*;
+use std::collections::HashMap;
+
+use super::{count_updates, gen_state, Status};
 
 macro_rules! S {
     ($s: expr) => {
@@ -23,6 +25,7 @@ fn state() {
     let state = gen_state(pkgs, updates);
     assert_eq!(count_updates(&state), 1);
 
+    use Status::*;
     assert_eq!(
         &state,
         &[

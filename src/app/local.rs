@@ -3,8 +3,8 @@ mod pacman_conf;
 use alpm::{Alpm, Error::DbNotNull, Event, SigLevel};
 use std::collections::HashSet;
 
-use crate::{error::*, print::*};
-use pacman_conf::*;
+use crate::{error::R, print::print_warning};
+use pacman_conf::get_configuration;
 
 macro_rules! every {
     ($($e:expr),+ $(,)?) => {

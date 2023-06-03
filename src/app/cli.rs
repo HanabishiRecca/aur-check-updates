@@ -1,6 +1,10 @@
 use std::collections::HashSet;
 
-use crate::{error::*, print::*, E};
+use crate::{
+    error::{ArgError, R},
+    print::ColorMode,
+    E,
+};
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct Config {

@@ -1,6 +1,8 @@
-use std::io::Cursor;
+use std::io::{BufReader, Cursor};
 
-use super::*;
+use crate::error::R;
+
+use super::read_config;
 
 #[test]
 fn config() -> R<()> {

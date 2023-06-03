@@ -3,8 +3,11 @@ mod aur;
 use alpm::vercmp;
 use std::{cmp::Ordering, collections::HashMap};
 
-use crate::{error::*, print::*};
-use aur::*;
+use crate::{
+    error::R,
+    print::{print_message, print_package, print_update},
+};
+use aur::request_updates;
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
 enum Status {

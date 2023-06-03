@@ -2,10 +2,13 @@ mod check;
 mod cli;
 mod local;
 
-use crate::{error::*, print::*};
-use check::*;
-use cli::*;
-use local::*;
+use crate::{
+    error::R,
+    print::{print_header, set_color_mode},
+};
+use check::check_updates;
+use cli::{read_args, Config};
+use local::find_foreign_packages;
 
 fn run(
     Config {
