@@ -24,18 +24,15 @@ fn run(
     check_updates(find_foreign_packages(ignores, ignore_groups)?)
 }
 
-fn get_bin_name() -> Option<String> {
-    Some(String::from(current_exe().ok()?.file_name()?.to_str()?))
-}
-
 pub fn run_app() -> R<()> {
     if let Some(config) = read_args(args().skip(1))? {
         return run(config);
     }
 
+    let bin = current_exe().ok();
     println!(
         include_str!("app/help.in"),
-        BIN_NAME = get_bin_name().as_deref().unwrap_or(env!("CARGO_BIN_NAME")),
+        BIN_NAME = (|| bin.as_ref()?.file_name()?.to_str())().unwrap_or(env!("CARGO_BIN_NAME")),
     );
 
     Ok(())
