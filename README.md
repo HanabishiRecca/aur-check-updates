@@ -52,4 +52,5 @@ Display help message and exit.
 
 ## Packages
 
-[`aur-check-updates`](https://aur.archlinux.org/packages/aur-check-updates)<sup>AUR</sup>
+-   [`aur-check-updates`](https://aur.archlinux.org/packages/aur-check-updates)<sup>AUR</sup>
+-   [`aur-check-updates-bin`](https://aur.archlinux.org/packages/aur-check-updates-bin)<sup>AUR</sup>
