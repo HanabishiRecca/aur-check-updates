@@ -47,6 +47,7 @@ pub fn read_args(mut args: impl Iterator<Item = String>) -> R<Option<Config>> {
             };
         }
         match arg.as_str().trim() {
+            "" => {}
             "--ignore" => extend!(config.ignores),
             "--ignoregroup" => extend!(config.ignore_groups),
             "--color" => {
