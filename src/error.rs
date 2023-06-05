@@ -1,7 +1,4 @@
-use alpm::Error as AlpmError;
-use curl::Error as CurlError;
-use serde_json::Error as JsonError;
-use std::{error, fmt, io::Error as IOError, string::FromUtf8Error};
+use std::{error, fmt, io, string};
 
 #[macro_export]
 macro_rules! E {
@@ -11,7 +8,7 @@ macro_rules! E {
 }
 
 macro_rules! Error {
-    ($($name:ident($err:tt)),+ $(,)?) => {
+    ($($name:ident($err:ty)),+ $(,)?) => {
         #[derive(Debug)]
         pub enum Error {
             $($name($err)),+
@@ -38,11 +35,11 @@ macro_rules! Error {
 
 Error!(
     Arg(ArgError),
-    IO(IOError),
-    Alpm(AlpmError),
-    Request(CurlError),
-    Utf8(FromUtf8Error),
-    Json(JsonError),
+    IO(io::Error),
+    Alpm(alpm::Error),
+    Request(curl::Error),
+    Utf8(string::FromUtf8Error),
+    Json(serde_json::Error),
 );
 
 pub type R<T> = Result<T, Error>;
