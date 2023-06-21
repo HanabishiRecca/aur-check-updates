@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use crate::{
+    consts::DEFAULT_TIMEOUT,
     error::{ArgError, R},
     print::ColorMode,
     E,
@@ -11,6 +12,7 @@ pub struct Config {
     pub ignores: HashSet<String>,
     pub ignore_groups: HashSet<String>,
     pub color_mode: ColorMode,
+    pub timeout: u64,
 }
 
 impl Config {
@@ -19,6 +21,7 @@ impl Config {
             ignores: HashSet::new(),
             ignore_groups: HashSet::new(),
             color_mode: ColorMode::Auto,
+            timeout: DEFAULT_TIMEOUT,
         }
     }
 }
@@ -58,6 +61,13 @@ pub fn read_args(mut args: impl Iterator<Item = String>) -> R<Option<Config>> {
                     "always" => Always,
                     "never" => Never,
                     _ => E!(ArgError::InvalidValue(arg, value)),
+                };
+            }
+            "--timeout" => {
+                let value = next!();
+                config.timeout = match value.as_str().trim().parse() {
+                    Ok(t) => t,
+                    Err(_) => E!(ArgError::InvalidValue(arg, value)),
                 };
             }
             "-h" | "--help" => return Ok(None),

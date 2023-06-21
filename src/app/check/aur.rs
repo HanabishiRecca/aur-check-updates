@@ -1,7 +1,7 @@
 use curl::easy::Easy;
 use serde::Deserialize;
 use serde_json::from_str;
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use crate::{consts::AUR_ENDPOINT, error::R};
 
@@ -18,9 +18,10 @@ struct Pkg {
     ver: String,
 }
 
-fn request(url: &str) -> R<String> {
+fn request(url: &str, timeout: u64) -> R<String> {
     let mut easy = Easy::new();
     easy.url(url)?;
+    easy.timeout(Duration::from_millis(timeout))?;
 
     let mut result = Vec::new();
     let mut transfer = easy.transfer();
@@ -38,13 +39,14 @@ fn request(url: &str) -> R<String> {
 
 pub fn request_updates<'a>(
     pkgs: impl Iterator<Item = &'a (String, String)>,
+    timeout: u64,
 ) -> R<HashMap<String, String>> {
     let url: String = [AUR_ENDPOINT, "?"]
         .into_iter()
         .chain(pkgs.flat_map(|(name, _)| ["&arg[]=", name].into_iter()))
         .collect();
 
-    Ok(from_str::<Response>(&request(&url)?)?
+    Ok(from_str::<Response>(&request(&url, timeout)?)?
         .results
         .into_iter()
         .map(|Pkg { name, ver }| (name, ver))

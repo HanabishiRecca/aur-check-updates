@@ -4,6 +4,7 @@ options:
       --ignore <package>       do not check updates for a package
       --ignoregroup <group>    do not check updates for packages in a group
       --color <when>           colorize the output (always, never, auto)
+      --timeout <ms>           set a timeout for network connection in milliseconds
   -h, --help                   display this help and exit
 
 Ignore options can be used more than once.

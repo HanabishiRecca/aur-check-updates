@@ -37,11 +37,14 @@ fn args() -> R<()> {
             S!("  never  "),
             S!("--ignore"),
             S!("bar,baz"),
+            S!("--timeout"),
+            S!("1234"),
         ],
         Some(Config {
             ignores: HashSet::from([S!("foo"), S!("bar"), S!("baz")]),
             ignore_groups: HashSet::from([S!("custom")]),
             color_mode: ColorMode::Never,
+            timeout: 1234,
         }),
     );
     Ok(())

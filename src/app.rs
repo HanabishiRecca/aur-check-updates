@@ -17,11 +17,12 @@ fn run(
         ignores,
         ignore_groups,
         color_mode,
+        timeout,
     }: Config,
 ) -> R<()> {
     set_color_mode(color_mode);
     print_header("Checking AUR updates...");
-    check_updates(find_foreign_packages(ignores, ignore_groups)?)
+    check_updates(find_foreign_packages(ignores, ignore_groups)?, timeout)
 }
 
 pub fn run_app() -> R<()> {
