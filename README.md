@@ -41,14 +41,35 @@ Example to disable coloring:
 
     $ aur-check-updates --color never
 
+### `--timeout <ms>`
+
+Set a timeout for network connection in milliseconds.  
+Default value is `5000`.
+
+Example to set the timeout to 10 seconds:
+
+    $ aur-check-updates --timeout 10000
+
 ### `-h`, `--help`
 
 Display help message and exit.
 
-## Dependencies
+## Download
+
+You can download prebuilt binaries from [releases](https://github.com/HanabishiRecca/aur-check-updates/releases) page.
+
+## Building from the source
+
+**Rust 1.70 or up is required.**
+
+Install dependencies:
 
 -   `libalpm`
 -   `libcurl`
+
+Install Rust compiler and run:
+
+    $ cargo build --release
 
 ## Packages
 
