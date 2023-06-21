@@ -37,9 +37,10 @@ jobs:
 
       - name: Upload archive
         run: |
+          cd "target/release"
           ARCHIVE="${APP}-${VERSION}-${CARCH}.tar.xz"
-          tar -cvJf "${ARCHIVE}" -C "target/release" "${APP}"
-          sha256sum "${ARCHIVE}"
+          sha256sum "${APP}" > "sha256sums.txt"
+          tar -cvJf "${ARCHIVE}" "${APP}" "sha256sums.txt"
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
