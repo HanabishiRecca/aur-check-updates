@@ -12,47 +12,27 @@ Example:
 The app is designed to perform only this simple task, so it does **not** build packages nor pull VCS updates.  
 If you need a fully-featured AUR helper, consider using [`paru`](https://github.com/morganamilo/paru) instead.
 
-## Options
+## Usage
 
-### `--ignore <package>`
+    $ aur-check-updates [<option>...]
 
-Do not check updates for a package.  
-Multiple packages can be specified by separating them with a comma.
+| Option                  | Description                                                               |
+| ----------------------- | ------------------------------------------------------------------------- |
+| `--ignore <package>`    | Do not check updates for a package.<sup>1</sup>                           |
+| `--ignoregroup <group>` | Do not check updates for packages in a group.<sup>1</sup>                 |
+| `--color <when>`        | Specify when to enable coloring: `always`, `never` or `auto`.<sup>2</sup> |
+| `--timeout <ms>`        | Set a timeout for network connection in milliseconds.<sup>3</sup>         |
+| `-h`, `--help`          | Display help message and exit.                                            |
 
-Example to ignore `foo` package:
+1. Ignore options can be used more than once. Multiple packages/groups can be specified by separating them with a comma.
+2. Default value is `auto`, it enables coloring only when tty is detected.
+3. Default value is `5000`.
 
-    $ aur-check-updates --ignore foo
+### Example
 
-### `--ignoregroup <group>`
+    $ aur-check-updates --ignore foo,bar --ignoregroup custom --color never --timeout 10000
 
-Do not check updates for packages in a group.  
-Multiple groups can be specified by separating them with a comma.
-
-Example to ignore packages in `custom` group:
-
-    $ aur-check-updates --ignoregroup custom
-
-### `--color <when>`
-
-Specify when to enable coloring. Valid options are `always`, `never`, or `auto`.  
-Default value `auto` only enables colors when outputting onto a tty.
-
-Example to disable coloring:
-
-    $ aur-check-updates --color never
-
-### `--timeout <ms>`
-
-Set a timeout for network connection in milliseconds.  
-Default value is `5000`.
-
-Example to set the timeout to 10 seconds:
-
-    $ aur-check-updates --timeout 10000
-
-### `-h`, `--help`
-
-Display help message and exit.
+Ignores `foo` and `bar` packages, ignores all packages in `custom` group, disables coloring, sets timeout to 10 seconds.
 
 ## Download
 
