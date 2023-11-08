@@ -1,33 +1,34 @@
-name: Build release binary
+name: Build and upload release binaries
+run-name: Build release @ ${{ github.event.release.tag_name }}
 
 on:
   release:
     types:
       - released
 
+env:
+  APP: aur-check-updates
+  VERSION: ${{ github.event.release.tag_name }}
+  UPLOAD_URL: ${{ github.event.release.upload_url }}
+  RUSTUP_TOOLCHAIN: stable
+  CARGO_BUILD_TARGET_DIR: target
+  CARGO_TERM_COLOR: always
+
 jobs:
-  build:
+  build-archlinux:
     runs-on: ubuntu-latest
     container:
       image: archlinux:base-devel
-      env:
-        APP: aur-check-updates
-        VERSION: ${{ github.event.release.tag_name }}
-        CARCH: x86_64
-        RUSTUP_TOOLCHAIN: stable
-        CARGO_TERM_COLOR: always
-        UPLOAD_URL: ${{ github.event.release.upload_url }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Prepare
         run: |
-          DEPS=('rust' 'mold')
-          pacman -Syu --needed --noconfirm --color always "${DEPS[@]}"
+          pacman -Syu --needed --noconfirm --color always "rust"
           mkdir ".cargo"
           cp -pv ".github/workflows/config.toml" -t ".cargo"
-          cargo fetch -v --locked --target "${CARCH}-unknown-linux-gnu"
+          cargo fetch -v --locked
 
       - name: Run tests
         run: cargo test -v --frozen
@@ -37,16 +38,15 @@ jobs:
 
       - name: Upload archive
         run: |
-          cd "target/release"
-          ARCHIVE="${APP}-${VERSION}-${CARCH}.tar.xz"
-          sha256sum "${APP}" > "sha256sums.txt"
-          tar -cvJf "${ARCHIVE}" "${APP}" "sha256sums.txt"
-          curl -L \
-            -X POST \
+          cd "${CARGO_BUILD_TARGET_DIR}/release"
+          ARCHIVE="${APP}-${VERSION}-archlinux-x86_64.tar.xz"
+          tar -I 'xz -9' -cvf "${ARCHIVE}" "${APP}"
+          URL="${UPLOAD_URL%'{'*}"
+          curl -L -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             -H "Content-Type: application/x-tar" \
             --fail-with-body --connect-timeout 10 --retry 3 \
             --data-binary "@${ARCHIVE}" \
-            "${UPLOAD_URL%'{'*}?name=${ARCHIVE}"
+            "${URL}?name=${ARCHIVE}"

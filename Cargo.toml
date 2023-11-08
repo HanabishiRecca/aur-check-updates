@@ -9,9 +9,6 @@ license = "MIT"
 readme = "README.md"
 publish = false
 
-[profile.release]
-panic = "abort"
-
 [dependencies]
 alpm = "2.2"
 curl = "0.4"

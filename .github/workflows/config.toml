@@ -2,13 +2,13 @@
 protocol = "sparse"
 
 [profile.release]
+panic = "abort"
 opt-level = 2
 strip = true
 lto = true
 codegen-units = 1
 
-[target.x86_64-unknown-linux-gnu]
+[build]
 rustflags = [
     "-C", "target-cpu=generic",
-    "-C", "link-arg=-fuse-ld=mold",
 ]
