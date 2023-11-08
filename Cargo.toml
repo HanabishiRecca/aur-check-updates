@@ -3,6 +3,11 @@ name = "aur-check-updates"
 version = "1.0.7"
 edition = "2021"
 rust-version = "1.70"
+description = "A very basic CLI app for checking updates from Arch User Repository (AUR)"
+repository = "https://github.com/HanabishiRecca/aur-check-updates"
+license = "MIT"
+readme = "README.md"
+publish = false
 
 [profile.release]
 panic = "abort"
