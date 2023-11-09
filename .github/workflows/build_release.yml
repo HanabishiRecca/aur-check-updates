@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: archlinux:base-devel
+      env:
+        CARGO_BUILD_TARGET: x86_64-unknown-linux-gnu
 
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +40,7 @@ jobs:
 
       - name: Upload archive
         run: |
-          cd "${CARGO_BUILD_TARGET_DIR}/release"
+          cd "${CARGO_BUILD_TARGET_DIR}/${CARGO_BUILD_TARGET}/release"
           ARCHIVE="${APP}-${VERSION}-archlinux-x86_64.tar.xz"
           tar -I 'xz -9' -cvf "${ARCHIVE}" "${APP}"
           URL="${UPLOAD_URL%'{'*}"
