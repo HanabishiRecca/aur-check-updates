@@ -47,7 +47,7 @@ macro_rules! PE {
 }
 
 pub fn print_header(s: impl Display) {
-    P!(":: {s}", "\x1b[1;34m::\x1b[0;1m {s}\x1b[0m");
+    P!(":: {s}", "\x1b[34;1m::\x1b[0;1m {s}\x1b[0m");
 }
 
 pub fn print_message(s: impl Display) {
@@ -57,7 +57,7 @@ pub fn print_message(s: impl Display) {
 pub fn print_update(name: impl Display, ver: impl Display, new_ver: impl Display) {
     P!(
         "{name} {ver} => {new_ver}",
-        "\x1b[0;1m{name} \x1b[1;31m{ver}\x1b[0m => \x1b[1;32m{new_ver}\x1b[0m",
+        "\x1b[0;1m{name} \x1b[31;1m{ver}\x1b[0m => \x1b[32;1m{new_ver}\x1b[0m",
     );
 }
 
@@ -66,9 +66,9 @@ pub fn print_package(name: impl Display, s: impl Display) {
 }
 
 pub fn print_error(e: impl Display) {
-    PE!("error: {e}", "\x1b[1;31merror:\x1b[0m {e}\x1b[0m");
+    PE!("error: {e}", "\x1b[31;1merror:\x1b[0m {e}\x1b[0m");
 }
 
 pub fn print_warning(w: impl Display) {
-    PE!("warning: {w}", "\x1b[1;33mwarning:\x1b[0m {w}\x1b[0m");
+    PE!("warning: {w}", "\x1b[33m;1mwarning:\x1b[0m {w}\x1b[0m");
 }
