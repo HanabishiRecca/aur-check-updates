@@ -1,11 +1,24 @@
-usage:  {BIN_NAME} [options]
+[1m{PKG} [32m{VER}[0m
+A very basic CLI app for checking updates from Arch User Repository (AUR).
 
-options:
-      --ignore <package>       do not check updates for a package
-      --ignoregroup <group>    do not check updates for packages in a group
-      --color <when>           colorize the output (always, never, auto)
-      --timeout <ms>           set a timeout for network connection in milliseconds
-  -h, --help                   display this help and exit
+Usage:
 
-Ignore options can be used more than once.
-Multiple packages/groups also can be specified by separating them with a comma.
+    [1m$ {BIN_NAME} [<option>...][0m
+
+Options:
+
+      [1m--ignore <package>[0m       do not check updates for a package [1]
+      [1m--ignoregroup <group>[0m    do not check updates for packages in a group [1]
+      [1m--color <when>[0m           specify when to enable coloring: [1malways[0m, [1mnever[0m or [1mauto[0m [2]
+      [1m--timeout <ms>[0m           set a timeout for network connection in milliseconds [3]
+  [1m-h[0m, [1m--help[0m                   display help message and exit
+
+1. Ignore options can be used more than once. Multiple packages/groups can be specified by separating them with a comma.
+2. Default value is [1mauto[0m, it enables coloring only when tty is detected.
+3. Default value is [1m5000[0m.
+
+Example:
+
+    [1m$ aur-check-updates --ignore foo,bar --ignoregroup custom --color never --timeout 10000[0m
+
+Ignores [1mfoo[0m and [1mbar[0m packages, ignores all packages in [1mcustom[0m group, disables coloring, sets timeout to 10 seconds.

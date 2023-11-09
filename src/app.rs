@@ -33,6 +33,8 @@ pub fn run_app() -> R<()> {
     let bin = current_exe().ok();
     println!(
         include_str!("app/help.in"),
+        PKG = env!("CARGO_PKG_NAME"),
+        VER = env!("CARGO_PKG_VERSION"),
         BIN_NAME = (|| bin.as_ref()?.file_name()?.to_str())().unwrap_or(env!("CARGO_BIN_NAME")),
     );
 
