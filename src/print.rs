@@ -26,23 +26,23 @@ pub fn set_color_mode(mode: ColorMode) {
 }
 
 macro_rules! print_to {
-    ($p: ident, $n: expr, $c: expr) => {
+    ($p: ident, $n: expr, $c: expr $(, $rest: expr)* $(,)?) => {
         match COLOR.load(Relaxed) {
-            true => $p!($c),
-            false => $p!($n),
+            true => $p!($c $(, $rest)*),
+            false => $p!($n  $(, $rest)*),
         }
     };
 }
 
 macro_rules! P {
-    ($n: expr, $c: expr $(,)?) => {
-        print_to!(println, $n, $c)
+    ($n: expr, $c: expr  $(, $rest: expr)* $(,)?) => {
+        print_to!(println, $n, $c $(, $rest)*)
     };
 }
 
 macro_rules! PE {
-    ($n: expr, $c: expr $(,)?) => {
-        print_to!(eprintln, $n, $c)
+    ($n: expr, $c: expr  $(, $rest: expr)* $(,)?) => {
+        print_to!(eprintln, $n, $c $(, $rest)*)
     };
 }
 
@@ -54,15 +54,25 @@ pub fn print_message(s: impl Display) {
     P!(" {s}", "\x1b[0m {s}\x1b[0m");
 }
 
-pub fn print_update(name: impl Display, ver: impl Display, new_ver: impl Display) {
-    P!(
-        "{name} {ver} => {new_ver}",
-        "\x1b[0;1m{name} \x1b[31;1m{ver}\x1b[0m => \x1b[32;1m{new_ver}\x1b[0m",
-    );
-}
+pub fn print_update(
+    name: impl Display,
+    ver: impl Display,
+    new_ver: impl Display,
+    nlen: usize,
+    vlen: usize,
+    active: bool,
+) {
+    let color = match active {
+        true => "\x1b[32;1m",
+        _ => "\x1b[2m",
+    };
 
-pub fn print_package(name: impl Display, s: impl Display) {
-    P!("{name} {s}", "\x1b[0;1m{name}\x1b[0m {s}\x1b[0m");
+    P!(
+        "{name:0$}    {ver:1$} => {new_ver}",
+        "\x1b[0;1m{name:0$} \x1b[31;1m{ver:1$}\x1b[0m => {color}{new_ver}\x1b[0m",
+        nlen,
+        vlen,
+    );
 }
 
 pub fn print_error(e: impl Display) {

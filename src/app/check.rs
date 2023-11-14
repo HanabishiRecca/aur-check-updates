@@ -5,7 +5,7 @@ use std::{cmp::Ordering, collections::HashMap};
 
 use crate::{
     error::R,
-    print::{print_message, print_package, print_update},
+    print::{print_message, print_update},
 };
 use aur::request_updates;
 
@@ -13,37 +13,48 @@ use aur::request_updates;
 enum Status {
     UpToDate,
     HasUpdate(String, String, String),
-    NotInAUR(String),
+    NotInAUR(String, String),
 }
 
-use Status::*;
-
-fn print_status(status: Status) {
+fn print_status(status: Status, nlen: usize, vlen: usize) {
+    use Status::*;
     match status {
-        HasUpdate(name, ver, new_ver) => print_update(name, ver, new_ver),
-        NotInAUR(name) => print_package(name, "is not in AUR"),
+        HasUpdate(name, ver, new_ver) => print_update(name, ver, new_ver, nlen, vlen, true),
+        NotInAUR(name, ver) => print_update(name, ver, "[not found in AUR]", nlen, vlen, false),
         _ => {}
     }
 }
 
 fn gen_state(pkgs: Vec<(String, String)>, mut updates: HashMap<String, String>) -> Vec<Status> {
     use Ordering::*;
+    use Status::*;
     pkgs.into_iter()
         .map(|(name, ver)| match updates.remove(&name) {
             Some(new_ver) => match vercmp(new_ver.as_str(), ver.as_str()) {
                 Greater => HasUpdate(name, ver, new_ver),
                 _ => UpToDate,
             },
-            _ => NotInAUR(name),
+            _ => NotInAUR(name, ver),
         })
         .collect()
 }
 
 fn count_updates(state: &[Status]) -> usize {
+    use Status::*;
     state
         .iter()
         .filter(|status| matches!(status, HasUpdate(_, _, _)))
         .count()
+}
+
+fn calc_lengths(state: &[Status]) -> (usize, usize) {
+    use Status::*;
+    state.iter().fold((0, 0), |prev, status| match status {
+        HasUpdate(name, ver, _) | NotInAUR(name, ver) => {
+            (name.len().max(prev.0), ver.len().max(prev.1))
+        }
+        _ => prev,
+    })
 }
 
 pub fn check_updates(pkgs: Vec<(String, String)>, timeout: u64) -> R<()> {
@@ -59,7 +70,12 @@ pub fn check_updates(pkgs: Vec<(String, String)>, timeout: u64) -> R<()> {
         print_message("no updates");
     }
 
-    state.into_iter().for_each(print_status);
+    let (nlen, vlen) = calc_lengths(&state);
+
+    for status in state {
+        print_status(status, nlen, vlen);
+    }
+
     Ok(())
 }
 

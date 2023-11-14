@@ -31,7 +31,7 @@ fn state() {
         &[
             UpToDate,
             HasUpdate(S!("foo"), S!("1.0.0"), S!("2.0.0")),
-            NotInAUR(S!("bar")),
+            NotInAUR(S!("bar"), S!("1.0.0")),
         ]
     );
 }
