@@ -2,12 +2,10 @@
 
 A very basic CLI app for checking updates from **Arch User Repository** (AUR).
 
-Example:
-
     $ aur-check-updates
     :: Checking AUR updates...
-    foo 1.0.0 => 2.0.0
-    bar is not in AUR
+    foo 1.0 => 2.0
+    bar 1.0 => [not found in AUR]
 
 The app is designed to perform only this simple task, so it does **not** build packages nor pull VCS updates.  
 If you need a fully-featured AUR helper, consider using [`paru`](https://github.com/morganamilo/paru) instead.
@@ -53,5 +51,7 @@ Install Rust compiler and run:
 
 ## Packages
 
--   [`aur-check-updates`](https://aur.archlinux.org/packages/aur-check-updates)<sup>AUR</sup>
--   [`aur-check-updates-bin`](https://aur.archlinux.org/packages/aur-check-updates-bin)<sup>AUR</sup>
+**AUR**
+
+-   [`aur-check-updates`](https://aur.archlinux.org/packages/aur-check-updates)
+-   [`aur-check-updates-bin`](https://aur.archlinux.org/packages/aur-check-updates-bin)
