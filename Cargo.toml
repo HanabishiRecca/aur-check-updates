@@ -1,6 +1,6 @@
 [package]
 name = "aur-check-updates"
-version = "1.0.9"
+version = "1.0.10"
 edition = "2021"
 rust-version = "1.70"
 description = "A very basic CLI app for checking updates from Arch User Repository (AUR)"
