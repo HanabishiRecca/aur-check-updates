@@ -10,5 +10,6 @@ codegen-units = 1
 
 [build]
 rustflags = [
-    "-C", "target-cpu=generic",
+    "-Ctarget-cpu=generic",
+    "-Cforce-frame-pointers=yes",
 ]
