@@ -12,24 +12,26 @@ use check::check_updates;
 use cli::{read_args, Config};
 use local::find_foreign_packages;
 
+const DEFAULT_DBPATH: &str = "/var/lib/pacman";
+const DEFAULT_ENDPOINT: &str = "https://aur.archlinux.org/rpc/v5/info";
+const DEFAULT_TIMEOUT: u64 = 5000;
+
 fn run(config: Config) -> R<()> {
     set_color_mode(config.color_mode);
     print_header("Checking AUR updates...");
 
-    let dbpath = config
-        .dbpath
-        .as_deref()
-        .unwrap_or(crate::consts::DEFAULT_DBPATH);
+    let dbpath = config.dbpath.as_deref().unwrap_or(DEFAULT_DBPATH);
 
     let mut repos = config.repos;
     if repos.is_empty() {
         repos = local::find_repos(dbpath)?;
     }
 
-    check_updates(
-        find_foreign_packages(dbpath, repos, config.ignores, config.ignore_groups)?,
-        config.timeout,
-    )
+    let packages = find_foreign_packages(dbpath, repos, config.ignores, config.ignore_groups)?;
+    let endpoint = DEFAULT_ENDPOINT;
+    let timeout = config.timeout.unwrap_or(DEFAULT_TIMEOUT);
+
+    check_updates(packages, endpoint, timeout)
 }
 
 fn print_help() {

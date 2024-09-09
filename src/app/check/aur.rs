@@ -3,7 +3,7 @@ use serde::Deserialize;
 use serde_json::from_str;
 use std::{collections::HashMap, time::Duration};
 
-use crate::{consts::AUR_ENDPOINT, error::R};
+use crate::error::R;
 
 #[derive(Deserialize)]
 struct Response {
@@ -39,9 +39,10 @@ fn request(url: &str, timeout: u64) -> R<String> {
 
 pub fn request_updates<'a>(
     pkgs: impl Iterator<Item = &'a (String, String)>,
+    endpoint: &str,
     timeout: u64,
 ) -> R<HashMap<String, String>> {
-    let url: String = [AUR_ENDPOINT, "?"]
+    let url: String = [endpoint, "?"]
         .into_iter()
         .chain(pkgs.flat_map(|(name, _)| ["&arg[]=", name].into_iter()))
         .collect();

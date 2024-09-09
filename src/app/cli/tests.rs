@@ -48,7 +48,7 @@ fn args() -> R<()> {
             ignores: HashSet::from([S!("foo"), S!("bar"), S!("baz")]),
             ignore_groups: HashSet::from([S!("custom")]),
             color_mode: ColorMode::Never,
-            timeout: 1234,
+            timeout: Some(1234),
             dbpath: Some(S!("/path/to/db")),
             repos: HashSet::from([S!("core"), S!("extra"), S!("multilib")]),
         }),

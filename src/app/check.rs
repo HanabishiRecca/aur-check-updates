@@ -57,13 +57,13 @@ fn calc_lengths(state: &[Status]) -> (usize, usize) {
     })
 }
 
-pub fn check_updates(pkgs: Vec<(String, String)>, timeout: u64) -> R<()> {
+pub fn check_updates(pkgs: Vec<(String, String)>, endpoint: &str, timeout: u64) -> R<()> {
     if pkgs.is_empty() {
         print_message("no packages to check");
         return Ok(());
     }
 
-    let updates = request_updates(pkgs.iter(), timeout)?;
+    let updates = request_updates(pkgs.iter(), endpoint, timeout)?;
     let state = gen_state(pkgs, updates);
 
     if count_updates(&state) == 0 {
