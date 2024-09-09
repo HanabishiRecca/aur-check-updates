@@ -19,6 +19,6 @@ Options:
 
 Example:
 
-    [1m$ aur-check-updates --ignore foo,bar --ignoregroup custom --color never --timeout 10000[0m
+    [1m$ {BIN_NAME} --ignore foo,bar --ignoregroup custom --color never --timeout 10000[0m
 
 Ignores [1mfoo[0m and [1mbar[0m packages, ignores all packages in [1mcustom[0m group, disables coloring, sets timeout to 10 seconds.
