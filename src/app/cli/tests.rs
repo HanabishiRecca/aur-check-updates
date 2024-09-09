@@ -14,7 +14,7 @@ macro_rules! S {
 }
 
 macro_rules! test_args {
-    ($a:expr, $r:expr $(,)?) => {
+    ($a: expr, $r: expr $(,)?) => {
         assert_eq!(read_args($a.into_iter())?, $r)
     };
 }
@@ -39,12 +39,18 @@ fn args() -> R<()> {
             S!("bar,baz"),
             S!("--timeout"),
             S!("1234"),
+            S!("--dbpath"),
+            S!("/path/to/db"),
+            S!("--repos"),
+            S!("core,extra,multilib"),
         ],
         Some(Config {
             ignores: HashSet::from([S!("foo"), S!("bar"), S!("baz")]),
             ignore_groups: HashSet::from([S!("custom")]),
             color_mode: ColorMode::Never,
             timeout: 1234,
+            dbpath: Some(S!("/path/to/db")),
+            repos: HashSet::from([S!("core"), S!("extra"), S!("multilib")]),
         }),
     );
     Ok(())

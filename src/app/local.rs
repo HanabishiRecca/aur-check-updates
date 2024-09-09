@@ -15,9 +15,9 @@ fn is_db(name: &str) -> bool {
     name.len() > DB_EXT.len() && name.ends_with(DB_EXT)
 }
 
-pub fn find_repos(dbpath: &str) -> R<Vec<String>> {
+pub fn find_repos(dbpath: &str) -> R<HashSet<String>> {
     let path = String::from_iter([dbpath, path::MAIN_SEPARATOR_STR, "sync"]);
-    let mut repos = Vec::new();
+    let mut repos = HashSet::new();
 
     for entry in fs::read_dir(path)? {
         let entry = entry?;
@@ -35,7 +35,7 @@ pub fn find_repos(dbpath: &str) -> R<Vec<String>> {
         }
 
         name.truncate(name.len() - DB_EXT.len());
-        repos.push(name);
+        repos.insert(name);
     }
 
     Ok(repos)
@@ -43,7 +43,7 @@ pub fn find_repos(dbpath: &str) -> R<Vec<String>> {
 
 pub fn find_foreign_packages(
     dbpath: &str,
-    repos: &[impl AsRef<str>],
+    repos: HashSet<String>,
     ignores: HashSet<String>,
     ignore_groups: HashSet<String>,
 ) -> R<Vec<(String, String)>> {
@@ -59,13 +59,11 @@ pub fn find_foreign_packages(
     });
 
     let repos = repos
-        .iter()
-        .filter_map(
-            |repo| match alpm.register_syncdb(repo.as_ref(), SigLevel::NONE) {
-                Err(DbNotNull) => None,
-                r => Some(r),
-            },
-        )
+        .into_iter()
+        .filter_map(|repo| match alpm.register_syncdb(repo, SigLevel::NONE) {
+            Err(DbNotNull) => None,
+            r => Some(r),
+        })
         .collect::<Result<Vec<_>, _>>()?;
 
     Ok(alpm

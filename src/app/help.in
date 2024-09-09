@@ -11,11 +11,14 @@ Options:
       [1m--ignoregroup <group>[0m    do not check updates for packages in a group [1]
       [1m--color <when>[0m           specify when to enable coloring: [1malways[0m, [1mnever[0m or [1mauto[0m [2]
       [1m--timeout <ms>[0m           set a timeout for network connection in milliseconds [3]
+      [1m--dbpath <path>[0m          alternate database location
+      [1m--repo <name>[0m            override working repository [4]
   [1m-h[0m, [1m--help[0m                   display help message and exit
 
 1. Ignore options can be used more than once. Multiple packages/groups can be specified by separating them with a comma.
 2. Default value is [1mauto[0m, it enables coloring only when tty is detected.
 3. Default value is [1m5000[0m.
+4. Can be used more than once. Multiple repositories can be specified by separating them with a comma. By default the app reads all repositories from [1mdbpath/sync[0m directory.
 
 Example:
 

@@ -13,6 +13,8 @@ pub struct Config {
     pub ignore_groups: HashSet<String>,
     pub color_mode: ColorMode,
     pub timeout: u64,
+    pub dbpath: Option<String>,
+    pub repos: HashSet<String>,
 }
 
 impl Config {
@@ -22,6 +24,8 @@ impl Config {
             ignore_groups: HashSet::new(),
             color_mode: ColorMode::Auto,
             timeout: DEFAULT_TIMEOUT,
+            dbpath: None,
+            repos: HashSet::new(),
         }
     }
 }
@@ -70,6 +74,10 @@ pub fn read_args(mut args: impl Iterator<Item = String>) -> R<Option<Config>> {
                     Err(_) => E!(ArgError::InvalidValue(arg, value)),
                 };
             }
+            "--dbpath" => {
+                config.dbpath = Some(next!());
+            }
+            "--repos" => extend!(config.repos),
             "-h" | "--help" => return Ok(None),
             _ => E!(ArgError::Unknown(arg)),
         }

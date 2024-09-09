@@ -16,11 +16,18 @@ fn run(config: Config) -> R<()> {
     set_color_mode(config.color_mode);
     print_header("Checking AUR updates...");
 
-    let dbpath = crate::consts::DEFAULT_DBPATH;
-    let repos = local::find_repos(dbpath)?;
+    let dbpath = config
+        .dbpath
+        .as_deref()
+        .unwrap_or(crate::consts::DEFAULT_DBPATH);
+
+    let mut repos = config.repos;
+    if repos.is_empty() {
+        repos = local::find_repos(dbpath)?;
+    }
 
     check_updates(
-        find_foreign_packages(dbpath, &repos, config.ignores, config.ignore_groups)?,
+        find_foreign_packages(dbpath, repos, config.ignores, config.ignore_groups)?,
         config.timeout,
     )
 }
