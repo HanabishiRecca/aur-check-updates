@@ -1,10 +1,7 @@
-mod pacman_conf;
-
 use alpm::{Alpm, Error::DbNotNull, Event, SigLevel};
 use std::collections::HashSet;
 
-use crate::{consts::DEFAULT_DBPATH, error::R, print::print_warning};
-use pacman_conf::get_configuration;
+use crate::{error::R, print::print_warning};
 
 macro_rules! every {
     ($($e:expr),+ $(,)?) => {
@@ -13,11 +10,12 @@ macro_rules! every {
 }
 
 pub fn find_foreign_packages(
+    dbpath: &str,
+    repos: &[impl AsRef<str>],
     ignores: HashSet<String>,
     ignore_groups: HashSet<String>,
 ) -> R<Vec<(String, String)>> {
-    let (dbpath, repos) = get_configuration()?;
-    let alpm = Alpm::new("/", dbpath.as_deref().unwrap_or(DEFAULT_DBPATH))?;
+    let alpm = Alpm::new("/", dbpath)?;
 
     alpm.set_event_cb((), |e, _| {
         if let Event::DatabaseMissing(event) = e.event() {
@@ -29,11 +27,13 @@ pub fn find_foreign_packages(
     });
 
     let repos = repos
-        .into_iter()
-        .filter_map(|repo| match alpm.register_syncdb(repo, SigLevel::NONE) {
-            Err(DbNotNull) => None,
-            r => Some(r),
-        })
+        .iter()
+        .filter_map(
+            |repo| match alpm.register_syncdb(repo.as_ref(), SigLevel::NONE) {
+                Err(DbNotNull) => None,
+                r => Some(r),
+            },
+        )
         .collect::<Result<Vec<_>, _>>()?;
 
     Ok(alpm
