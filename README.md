@@ -21,6 +21,7 @@ If you need a fully-featured AUR helper, consider using [`paru`](https://github.
 | `--color <when>`         | Specify when to enable coloring: `always`, `never` or `auto`. Default value is `auto`, it enables coloring only when tty is detected. |
 | `--dbpath <path>`        | Alternate database location. Default value is `/var/lib/pacman`.                                                                      |
 | `--repo <names>`         | Override working repositories. By default all repositories from `dbpath/sync` directory are used. <sup>1</sup>                        |
+| `--endpoint <url>`       | Change AUR info endpoint url. Default value is `https://aur.archlinux.org/rpc/v5/info`.                                               |
 | `--timeout <ms>`         | Set a timeout for network connection in milliseconds. Default value is `5000`.                                                        |
 | `-h`, `--help`           | Display the help message.                                                                                                             |
 

@@ -28,7 +28,7 @@ fn run(config: Config) -> R<()> {
     }
 
     let packages = find_foreign_packages(dbpath, repos, config.ignores, config.ignore_groups)?;
-    let endpoint = DEFAULT_ENDPOINT;
+    let endpoint = config.endpoint.as_deref().unwrap_or(DEFAULT_ENDPOINT);
     let timeout = config.timeout.unwrap_or(DEFAULT_TIMEOUT);
 
     check_updates(packages, endpoint, timeout)

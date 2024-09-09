@@ -13,6 +13,7 @@ pub struct Config {
     pub color_mode: ColorMode,
     pub dbpath: Option<String>,
     pub repos: HashSet<String>,
+    pub endpoint: Option<String>,
     pub timeout: Option<u64>,
 }
 
@@ -24,6 +25,7 @@ impl Config {
             color_mode: ColorMode::Auto,
             dbpath: None,
             repos: HashSet::new(),
+            endpoint: None,
             timeout: None,
         }
     }
@@ -70,6 +72,9 @@ pub fn read_args(mut args: impl Iterator<Item = String>) -> R<Option<Config>> {
                 config.dbpath = Some(next!());
             }
             "--repos" => extend!(config.repos),
+            "--endpoint" => {
+                config.endpoint = Some(next!());
+            }
             "--timeout" => {
                 let value = next!();
                 config.timeout = Some(match value.as_str().trim().parse() {

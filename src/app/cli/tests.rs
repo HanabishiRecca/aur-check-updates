@@ -41,6 +41,8 @@ fn args() -> R<()> {
             S!("/path/to/db"),
             S!("--repos"),
             S!("core,extra,multilib"),
+            S!("--endpoint"),
+            S!("https://"),
             S!("--timeout"),
             S!("1234"),
         ],
@@ -50,6 +52,7 @@ fn args() -> R<()> {
             color_mode: ColorMode::Never,
             dbpath: Some(S!("/path/to/db")),
             repos: HashSet::from([S!("core"), S!("extra"), S!("multilib")]),
+            endpoint: Some(S!("https://")),
             timeout: Some(1234),
         }),
     );
