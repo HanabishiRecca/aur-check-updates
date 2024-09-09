@@ -10,9 +10,9 @@ Options:
       [1m--ignore <packages>[0m       do not check updates for packages
       [1m--ignoregroup <groups>[0m    do not check updates for package groups
       [1m--color <when>[0m            specify when to enable coloring: [1malways[0m, [1mnever[0m or [1mauto[0m
-      [1m--timeout <ms>[0m            set a timeout for network connection in milliseconds
       [1m--dbpath <path>[0m           alternate database location
       [1m--repo <names>[0m            override working repositories
+      [1m--timeout <ms>[0m            set a timeout for network connection in milliseconds
   [1m-h[0m, [1m--help[0m                 display the help message
 
 Example:

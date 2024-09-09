@@ -37,20 +37,20 @@ fn args() -> R<()> {
             S!("  never  "),
             S!("--ignore"),
             S!("bar,baz"),
-            S!("--timeout"),
-            S!("1234"),
             S!("--dbpath"),
             S!("/path/to/db"),
             S!("--repos"),
             S!("core,extra,multilib"),
+            S!("--timeout"),
+            S!("1234"),
         ],
         Some(Config {
             ignores: HashSet::from([S!("foo"), S!("bar"), S!("baz")]),
             ignore_groups: HashSet::from([S!("custom")]),
             color_mode: ColorMode::Never,
-            timeout: Some(1234),
             dbpath: Some(S!("/path/to/db")),
             repos: HashSet::from([S!("core"), S!("extra"), S!("multilib")]),
+            timeout: Some(1234),
         }),
     );
     Ok(())

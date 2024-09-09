@@ -11,9 +11,9 @@ pub struct Config {
     pub ignores: HashSet<String>,
     pub ignore_groups: HashSet<String>,
     pub color_mode: ColorMode,
-    pub timeout: Option<u64>,
     pub dbpath: Option<String>,
     pub repos: HashSet<String>,
+    pub timeout: Option<u64>,
 }
 
 impl Config {
@@ -22,9 +22,9 @@ impl Config {
             ignores: HashSet::new(),
             ignore_groups: HashSet::new(),
             color_mode: ColorMode::Auto,
-            timeout: None,
             dbpath: None,
             repos: HashSet::new(),
+            timeout: None,
         }
     }
 }
@@ -66,6 +66,10 @@ pub fn read_args(mut args: impl Iterator<Item = String>) -> R<Option<Config>> {
                     _ => E!(ArgError::InvalidValue(arg, value)),
                 };
             }
+            "--dbpath" => {
+                config.dbpath = Some(next!());
+            }
+            "--repos" => extend!(config.repos),
             "--timeout" => {
                 let value = next!();
                 config.timeout = Some(match value.as_str().trim().parse() {
@@ -73,10 +77,6 @@ pub fn read_args(mut args: impl Iterator<Item = String>) -> R<Option<Config>> {
                     _ => E!(ArgError::InvalidValue(arg, value)),
                 });
             }
-            "--dbpath" => {
-                config.dbpath = Some(next!());
-            }
-            "--repos" => extend!(config.repos),
             "-h" | "--help" => return Ok(None),
             _ => E!(ArgError::Unknown(arg)),
         }
