@@ -17,10 +17,10 @@ fn run(config: Config) -> R<()> {
     print_header("Checking AUR updates...");
 
     let dbpath = crate::consts::DEFAULT_DBPATH;
-    let repos = &["core", "extra"];
+    let repos = local::find_repos(dbpath)?;
 
     check_updates(
-        find_foreign_packages(dbpath, repos, config.ignores, config.ignore_groups)?,
+        find_foreign_packages(dbpath, &repos, config.ignores, config.ignore_groups)?,
         config.timeout,
     )
 }
