@@ -6,6 +6,7 @@ use std::{
 
 static COLOR: AtomicBool = AtomicBool::new(false);
 
+#[derive(Clone, Copy)]
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub enum ColorMode {
     Auto,

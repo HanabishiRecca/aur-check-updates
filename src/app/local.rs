@@ -1,10 +1,10 @@
-use alpm::{Alpm, Error::DbNotNull, Event, SigLevel};
+use alpm::{Alpm, Event, SigLevel};
 use std::{collections::HashSet, fs, path};
 
 use crate::{error::R, print::print_warning};
 
 macro_rules! every {
-    ($($e:expr),+ $(,)?) => {
+    ($($e: expr),+ $(,)?) => {
         $(($e)) && +
     };
 }
@@ -15,9 +15,9 @@ fn is_db(name: &str) -> bool {
     name.len() > DB_EXT.len() && name.ends_with(DB_EXT)
 }
 
-pub fn find_repos(dbpath: &str) -> R<HashSet<String>> {
+pub fn find_repos(dbpath: &str) -> R<Vec<String>> {
     let path = String::from_iter([dbpath, path::MAIN_SEPARATOR_STR, "sync"]);
-    let mut repos = HashSet::new();
+    let mut repos = Vec::new();
 
     for entry in fs::read_dir(path)? {
         let entry = entry?;
@@ -35,36 +35,40 @@ pub fn find_repos(dbpath: &str) -> R<HashSet<String>> {
         }
 
         name.truncate(name.len() - DB_EXT.len());
-        repos.insert(name);
+        repos.push(name);
     }
 
     Ok(repos)
 }
 
+fn to_hashset(source: &[impl AsRef<str>]) -> HashSet<&str> {
+    HashSet::from_iter(source.iter().map(AsRef::as_ref))
+}
+
 pub fn find_foreign_packages(
     dbpath: &str,
-    repos: HashSet<String>,
-    ignores: HashSet<String>,
-    ignore_groups: HashSet<String>,
+    repos: &[impl AsRef<str>],
+    ignores: &[impl AsRef<str>],
+    ignore_groups: &[impl AsRef<str>],
 ) -> R<Vec<(String, String)>> {
     let alpm = Alpm::new("/", dbpath)?;
 
     alpm.set_event_cb((), |e, _| {
         if let Event::DatabaseMissing(event) = e.event() {
             print_warning(format_args!(
-                "database file for '{}' does not exist (use 'pacman -Sy' to download)",
+                "database file for '{}' does not exist",
                 event.dbname()
             ))
         }
     });
 
     let repos = repos
-        .into_iter()
-        .filter_map(|repo| match alpm.register_syncdb(repo, SigLevel::NONE) {
-            Err(DbNotNull) => None,
-            r => Some(r),
-        })
+        .iter()
+        .map(|repo| alpm.register_syncdb(repo.as_ref(), SigLevel::NONE))
         .collect::<Result<Vec<_>, _>>()?;
+
+    let ignores = to_hashset(ignores);
+    let ignore_groups = to_hashset(ignore_groups);
 
     Ok(alpm
         .localdb()

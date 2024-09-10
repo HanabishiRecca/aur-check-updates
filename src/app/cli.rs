@@ -1,37 +1,79 @@
-use std::collections::HashSet;
-
 use crate::{
     error::{ArgError, R},
     print::ColorMode,
     E,
 };
 
+type Str = Box<str>;
+type Arr = Box<[Str]>;
+
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct Config {
-    pub ignores: HashSet<String>,
-    pub ignore_groups: HashSet<String>,
-    pub color_mode: ColorMode,
-    pub dbpath: Option<String>,
-    pub repos: HashSet<String>,
-    pub endpoint: Option<String>,
-    pub timeout: Option<u64>,
+    ignores: Option<Arr>,
+    ignore_groups: Option<Arr>,
+    color_mode: Option<ColorMode>,
+    dbpath: Option<Str>,
+    repos: Option<Arr>,
+    endpoint: Option<Str>,
+    timeout: Option<u64>,
 }
 
 impl Config {
     fn new() -> Self {
         Config {
-            ignores: HashSet::new(),
-            ignore_groups: HashSet::new(),
-            color_mode: ColorMode::Auto,
+            ignores: None,
+            ignore_groups: None,
+            color_mode: None,
             dbpath: None,
-            repos: HashSet::new(),
+            repos: None,
             endpoint: None,
             timeout: None,
         }
     }
+
+    pub fn ignores(&self) -> Option<&[impl AsRef<str>]> {
+        self.ignores.as_deref()
+    }
+
+    pub fn ignore_groups(&self) -> Option<&[impl AsRef<str>]> {
+        self.ignore_groups.as_deref()
+    }
+
+    pub fn color_mode(&self) -> Option<ColorMode> {
+        self.color_mode
+    }
+
+    pub fn dbpath(&self) -> Option<&str> {
+        self.dbpath.as_deref()
+    }
+
+    pub fn repos(&self) -> Option<&[impl AsRef<str>]> {
+        self.repos.as_deref()
+    }
+
+    pub fn endpoint(&self) -> Option<&str> {
+        self.endpoint.as_deref()
+    }
+
+    pub fn timeout(&self) -> Option<u64> {
+        self.timeout
+    }
 }
 
-pub fn read_args(mut args: impl Iterator<Item = String>) -> R<Option<Config>> {
+fn parse_list<'a, T: FromIterator<impl From<&'a str>>>(str: &'a str) -> T {
+    str.split(',')
+        .filter(|s| !s.is_empty())
+        .map(From::from)
+        .collect()
+}
+
+macro_rules! F {
+    ($s: expr) => {
+        From::from($s.as_ref())
+    };
+}
+
+pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> R<Option<Config>> {
     let mut config = Config::new();
 
     while let Some(arg) = args.next() {
@@ -39,51 +81,51 @@ pub fn read_args(mut args: impl Iterator<Item = String>) -> R<Option<Config>> {
             () => {
                 match args.next() {
                     Some(value) => value,
-                    _ => E!(ArgError::NoValue(arg)),
+                    _ => E!(ArgError::NoValue(F!(arg))),
                 }
             };
         }
-        macro_rules! extend {
-            ($h:expr) => {
-                $h.extend(
-                    next!()
-                        .split(',')
-                        .map(|s| s.trim())
-                        .filter(|s| !s.is_empty())
-                        .map(String::from),
-                )
+        macro_rules! list {
+            () => {
+                parse_list(next!().as_ref())
             };
         }
-        match arg.as_str().trim() {
+        match arg.as_ref() {
             "" => {}
-            "--ignore" => extend!(config.ignores),
-            "--ignoregroup" => extend!(config.ignore_groups),
+            "--ignore" => {
+                config.ignores = Some(list!());
+            }
+            "--ignoregroup" => {
+                config.ignore_groups = Some(list!());
+            }
             "--color" => {
                 let value = next!();
                 use ColorMode::*;
-                config.color_mode = match value.as_str().trim() {
+                config.color_mode = Some(match value.as_ref() {
                     "auto" => Auto,
                     "always" => Always,
                     "never" => Never,
-                    _ => E!(ArgError::InvalidValue(arg, value)),
-                };
+                    _ => E!(ArgError::InvalidValue(F!(arg), F!(value))),
+                });
             }
             "--dbpath" => {
-                config.dbpath = Some(next!());
+                config.dbpath = Some(F!(next!()));
             }
-            "--repos" => extend!(config.repos),
+            "--repos" => {
+                config.repos = Some(list!());
+            }
             "--endpoint" => {
-                config.endpoint = Some(next!());
+                config.endpoint = Some(F!(next!()));
             }
             "--timeout" => {
                 let value = next!();
-                config.timeout = Some(match value.as_str().trim().parse() {
+                config.timeout = Some(match value.as_ref().parse() {
                     Ok(t) => t,
-                    _ => E!(ArgError::InvalidValue(arg, value)),
+                    _ => E!(ArgError::InvalidValue(F!(arg), F!(value))),
                 });
             }
             "-h" | "--help" => return Ok(None),
-            _ => E!(ArgError::Unknown(arg)),
+            _ => E!(ArgError::Unknown(F!(arg))),
         }
     }
 

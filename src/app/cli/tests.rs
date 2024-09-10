@@ -1,82 +1,79 @@
-use std::collections::HashSet;
-
 use crate::{
-    error::{ArgError, Error, R},
+    error::{ArgError, Error},
     print::ColorMode,
 };
 
 use super::{read_args, Config};
 
-macro_rules! S {
-    ($s: expr) => {
-        String::from($s)
+macro_rules! read_args {
+    ($a: expr) => {
+        read_args($a.into_iter())
     };
+}
+
+fn cmp(a: &[impl AsRef<str>], b: &[impl AsRef<str>]) {
+    assert_eq!(a.len(), b.len());
+    for i in 0..a.len() {
+        assert_eq!(a[i].as_ref(), b[i].as_ref());
+    }
+}
+
+#[test]
+fn args() {
+    let ignores = &["foo", "bar", "baz"];
+    let ignore_groups = &["custom"];
+    let dbpath = "/path/to/db";
+    let repos = &["core", "extra", "multilib"];
+    let endpoint = "https://";
+    let timeout = 1234;
+
+    let args = [
+        "--ignore",
+        &ignores.join(","),
+        "--ignoregroup",
+        &ignore_groups.join(","),
+        "--color",
+        "never",
+        "--dbpath",
+        dbpath,
+        "--repos",
+        &repos.join(","),
+        "--endpoint",
+        endpoint,
+        "--timeout",
+        &timeout.to_string(),
+        "",
+    ];
+
+    let config = read_args!(args).unwrap().unwrap();
+    cmp(config.ignores().unwrap(), ignores);
+    cmp(config.ignore_groups().unwrap(), &["custom"]);
+    assert_eq!(config.color_mode(), Some(ColorMode::Never));
+    assert_eq!(config.dbpath(), Some(dbpath));
+    cmp(config.repos().unwrap(), repos);
+    assert_eq!(config.endpoint(), Some(endpoint));
+    assert_eq!(config.timeout(), Some(timeout));
 }
 
 macro_rules! test_args {
     ($a: expr, $r: expr $(,)?) => {
-        assert_eq!(read_args($a.into_iter())?, $r)
+        assert_eq!(read_args!($a).unwrap(), $r)
     };
 }
 
 #[test]
-fn no_args() -> R<()> {
-    test_args!([], Some(Config::new()));
-    Ok(())
+fn no_args() {
+    test_args!([""; 0], Some(Config::new()));
 }
 
 #[test]
-fn args() -> R<()> {
-    test_args!(
-        [
-            S!("--ignore"),
-            S!("foo"),
-            S!("--ignoregroup"),
-            S!("  ,\t  custom  \n,  "),
-            S!("  --color  "),
-            S!("  never  "),
-            S!("--ignore"),
-            S!("bar,baz"),
-            S!("--dbpath"),
-            S!("/path/to/db"),
-            S!("--repos"),
-            S!("core,extra,multilib"),
-            S!("--endpoint"),
-            S!("https://"),
-            S!("--timeout"),
-            S!("1234"),
-        ],
-        Some(Config {
-            ignores: HashSet::from([S!("foo"), S!("bar"), S!("baz")]),
-            ignore_groups: HashSet::from([S!("custom")]),
-            color_mode: ColorMode::Never,
-            dbpath: Some(S!("/path/to/db")),
-            repos: HashSet::from([S!("core"), S!("extra"), S!("multilib")]),
-            endpoint: Some(S!("https://")),
-            timeout: Some(1234),
-        }),
-    );
-    Ok(())
-}
-
-#[test]
-fn help() -> R<()> {
-    test_args!(
-        [
-            S!("--ignore"),
-            S!("foo"),
-            S!("-h"),
-            S!("--ignore"),
-            S!("foo"),
-        ],
-        None,
-    );
-    Ok(())
+fn help() {
+    test_args!(["--ignore", "foo", "-h", "--ignore", "foo",], None);
 }
 
 macro_rules! test_error {
-    ($a:expr, $r:pat $(,)?) => {
-        assert!(matches!(read_args($a.into_iter()), Err(Error::Arg($r)),))
+    ($a: expr, $r: pat $(,)?) => {
+        assert!(matches!(read_args!($a), Err(Error::Arg($r))))
     };
 }
 
@@ -84,15 +81,15 @@ use ArgError::*;
 
 #[test]
 fn no_value() {
-    test_error!([S!("--ignore")], NoValue(_));
+    test_error!(["--ignore"], NoValue(_));
 }
 
 #[test]
 fn invalid_value() {
-    test_error!([S!("--color"), S!("foo")], InvalidValue(_, _));
+    test_error!(["--color", "foo"], InvalidValue(_, _));
 }
 
 #[test]
 fn unknown_arg() {
-    test_error!([S!("--foo")], Unknown(_));
+    test_error!(["--foo"], Unknown(_));
 }

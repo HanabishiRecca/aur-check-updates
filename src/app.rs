@@ -6,7 +6,7 @@ use std::env::{args, current_exe};
 
 use crate::{
     error::R,
-    print::{print_header, set_color_mode},
+    print::{print_header, set_color_mode, ColorMode},
 };
 use check::check_updates;
 use cli::{read_args, Config};
@@ -17,20 +17,20 @@ const DEFAULT_ENDPOINT: &str = "https://aur.archlinux.org/rpc/v5/info";
 const DEFAULT_TIMEOUT: u64 = 5000;
 
 fn run(config: Config) -> R<()> {
-    set_color_mode(config.color_mode);
+    set_color_mode(config.color_mode().unwrap_or(ColorMode::Auto));
     print_header("Checking AUR updates...");
 
-    let dbpath = config.dbpath.as_deref().unwrap_or(DEFAULT_DBPATH);
+    let dbpath = config.dbpath().unwrap_or(DEFAULT_DBPATH);
+    let ignores = config.ignores().unwrap_or(&[]);
+    let ignore_groups = config.ignore_groups().unwrap_or(&[]);
 
-    let mut repos = config.repos;
-    if repos.is_empty() {
-        repos = local::find_repos(dbpath)?;
-    }
+    let packages = match config.repos() {
+        Some(repos) => find_foreign_packages(dbpath, repos, ignores, ignore_groups)?,
+        _ => find_foreign_packages(dbpath, &local::find_repos(dbpath)?, ignores, ignore_groups)?,
+    };
 
-    let packages = find_foreign_packages(dbpath, repos, config.ignores, config.ignore_groups)?;
-    let endpoint = config.endpoint.as_deref().unwrap_or(DEFAULT_ENDPOINT);
-    let timeout = config.timeout.unwrap_or(DEFAULT_TIMEOUT);
-
+    let endpoint = config.endpoint().unwrap_or(DEFAULT_ENDPOINT);
+    let timeout = config.timeout().unwrap_or(DEFAULT_TIMEOUT);
     check_updates(packages, endpoint, timeout)
 }
 

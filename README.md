@@ -20,12 +20,12 @@ If you need a fully-featured AUR helper, consider using [`paru`](https://github.
 | `--ignoregroup <groups>` | Do not check updates for package groups. <sup>1</sup>                                                                                 |
 | `--color <when>`         | Specify when to enable coloring: `always`, `never` or `auto`. Default value is `auto`, it enables coloring only when tty is detected. |
 | `--dbpath <path>`        | Alternate database location. Default value is `/var/lib/pacman`.                                                                      |
-| `--repo <names>`         | Override working repositories. By default all repositories from `dbpath/sync` directory are used. <sup>1</sup>                        |
+| `--repos <names>`        | Override working repositories. By default all repositories from `dbpath/sync` directory are used. <sup>1</sup>                        |
 | `--endpoint <url>`       | Change AUR info endpoint url. Default value is `https://aur.archlinux.org/rpc/v5/info`.                                               |
 | `--timeout <ms>`         | Set a timeout for network connection in milliseconds. Default value is `5000`.                                                        |
 | `-h`, `--help`           | Display the help message.                                                                                                             |
 
-1. Supports list of comma separated values. Could be used multiple times, subsequent uses append to the list.
+1. Multiple values could be specified using a comma-separated list.
 
 ### Example
 
