@@ -47,15 +47,15 @@ macro_rules! PE {
     };
 }
 
-pub fn print_header(s: impl Display) {
+pub fn header(s: impl Display) {
     P!(":: {s}", "\x1b[34;1m::\x1b[0;1m {s}\x1b[0m");
 }
 
-pub fn print_message(s: impl Display) {
+pub fn message(s: impl Display) {
     P!(" {s}", "\x1b[0m {s}\x1b[0m");
 }
 
-pub fn print_update(
+pub fn update(
     name: impl Display,
     ver: impl Display,
     new_ver: impl Display,
@@ -76,10 +76,10 @@ pub fn print_update(
     );
 }
 
-pub fn print_error(e: impl Display) {
+pub fn error(e: impl Display) {
     PE!("error: {e}", "\x1b[31;1merror:\x1b[0m {e}\x1b[0m");
 }
 
-pub fn print_warning(w: impl Display) {
+pub fn warning(w: impl Display) {
     PE!("warning: {w}", "\x1b[33;1mwarning:\x1b[0m {w}\x1b[0m");
 }

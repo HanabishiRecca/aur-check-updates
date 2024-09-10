@@ -1,19 +1,16 @@
 use crate::{
-    error::{ArgError, R},
     print::ColorMode,
-    E,
+    types::{Arr, Str},
 };
-
-type Str = Box<str>;
-type Arr = Box<[Str]>;
+use std::{error, fmt};
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct Config {
-    ignores: Option<Arr>,
-    ignore_groups: Option<Arr>,
+    ignores: Option<Arr<Str>>,
+    ignore_groups: Option<Arr<Str>>,
     color_mode: Option<ColorMode>,
     dbpath: Option<Str>,
-    repos: Option<Arr>,
+    repos: Option<Arr<Str>>,
     endpoint: Option<Str>,
     timeout: Option<u64>,
 }
@@ -60,6 +57,33 @@ impl Config {
     }
 }
 
+#[derive(Debug)]
+pub enum Error {
+    NoValue(Str),
+    InvalidValue(Str, Str),
+    Unknown(Str),
+}
+
+impl error::Error for Error {}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use Error::*;
+        match self {
+            NoValue(arg) => write!(f, "option '{arg}' requires value"),
+            InvalidValue(arg, value) => write!(f, "invalid value '{value}' for option '{arg}'"),
+            Unknown(arg) => write!(f, "unknown option '{arg}'"),
+        }
+    }
+}
+
+macro_rules! E {
+    ($e: expr) => {{
+        use Error::*;
+        return Err($e);
+    }};
+}
+
 fn parse_list<'a, T: FromIterator<impl From<&'a str>>>(str: &'a str) -> T {
     str.split(',')
         .filter(|s| !s.is_empty())
@@ -73,7 +97,7 @@ macro_rules! F {
     };
 }
 
-pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> R<Option<Config>> {
+pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> Result<Option<Config>, Error> {
     let mut config = Config::new();
 
     while let Some(arg) = args.next() {
@@ -81,7 +105,7 @@ pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> R<Option<Co
             () => {
                 match args.next() {
                     Some(value) => value,
-                    _ => E!(ArgError::NoValue(F!(arg))),
+                    _ => E!(NoValue(F!(arg))),
                 }
             };
         }
@@ -105,7 +129,7 @@ pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> R<Option<Co
                     "auto" => Auto,
                     "always" => Always,
                     "never" => Never,
-                    _ => E!(ArgError::InvalidValue(F!(arg), F!(value))),
+                    _ => E!(InvalidValue(F!(arg), F!(value))),
                 });
             }
             "--dbpath" => {
@@ -121,11 +145,11 @@ pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> R<Option<Co
                 let value = next!();
                 config.timeout = Some(match value.as_ref().parse() {
                     Ok(t) => t,
-                    _ => E!(ArgError::InvalidValue(F!(arg), F!(value))),
+                    _ => E!(InvalidValue(F!(arg), F!(value))),
                 });
             }
             "-h" | "--help" => return Ok(None),
-            _ => E!(ArgError::Unknown(F!(arg))),
+            _ => E!(Unknown(F!(arg))),
         }
     }
 

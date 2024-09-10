@@ -1,9 +1,4 @@
-use crate::{
-    error::{ArgError, Error},
-    print::ColorMode,
-};
-
-use super::{read_args, Config};
+use super::*;
 
 macro_rules! read_args {
     ($a: expr) => {
@@ -73,11 +68,11 @@ fn help() {
 
 macro_rules! test_error {
     ($a: expr, $r: pat $(,)?) => {
-        assert!(matches!(read_args!($a), Err(Error::Arg($r))))
+        assert!(matches!(read_args!($a), Err($r)))
     };
 }
 
-use ArgError::*;
+use Error::*;
 
 #[test]
 fn no_value() {
