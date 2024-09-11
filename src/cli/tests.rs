@@ -15,10 +15,10 @@ fn cmp(a: &[impl AsRef<str>], b: &[impl AsRef<str>]) {
 
 #[test]
 fn args() {
-    let ignores = &["foo", "bar", "baz"];
-    let ignore_groups = &["custom"];
+    let ignores = ["foo", "bar", "baz"];
+    let ignore_groups = ["custom"];
     let dbpath = "/path/to/db";
-    let repos = &["core", "extra", "multilib"];
+    let repos = ["core", "extra", "multilib"];
     let endpoint = "https://";
     let timeout = 1234;
 
@@ -41,11 +41,11 @@ fn args() {
     ];
 
     let config = read_args!(args).unwrap().unwrap();
-    cmp(config.ignores().unwrap(), ignores);
-    cmp(config.ignore_groups().unwrap(), &["custom"]);
+    cmp(config.ignores().unwrap(), &ignores);
+    cmp(config.ignore_groups().unwrap(), &ignore_groups);
     assert_eq!(config.color_mode(), Some(ColorMode::Never));
     assert_eq!(config.dbpath(), Some(dbpath));
-    cmp(config.repos().unwrap(), repos);
+    cmp(config.repos().unwrap(), &repos);
     assert_eq!(config.endpoint(), Some(endpoint));
     assert_eq!(config.timeout(), Some(timeout));
 }
@@ -63,7 +63,7 @@ fn no_args() {
 
 #[test]
 fn help() {
-    test_args!(["--ignore", "foo", "-h", "--ignore", "foo",], None);
+    test_args!(["--ignore", "foo", "-h", "--foo",], None);
 }
 
 macro_rules! test_error {
@@ -72,19 +72,17 @@ macro_rules! test_error {
     };
 }
 
-use Error::*;
-
 #[test]
 fn no_value() {
-    test_error!(["--ignore"], NoValue(_));
+    test_error!(["--ignore"], Error::NoValue(_));
 }
 
 #[test]
 fn invalid_value() {
-    test_error!(["--color", "foo"], InvalidValue(_, _));
+    test_error!(["--color", "foo"], Error::InvalidValue(_, _));
 }
 
 #[test]
 fn unknown_arg() {
-    test_error!(["--foo"], Unknown(_));
+    test_error!(["--foo"], Error::Unknown(_));
 }

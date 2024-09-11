@@ -28,7 +28,7 @@ fn to_hashset(source: &[impl AsRef<str>]) -> HashSet<&str> {
     HashSet::from_iter(source.iter().map(AsRef::as_ref))
 }
 
-macro_rules! every {
+macro_rules! and {
     ($($e: expr),+ $(,)?) => {
         $(($e)) && +
     };
@@ -51,7 +51,7 @@ pub fn find_foreign_packages(
         .into_iter()
         .filter_map(|pkg| {
             let name = pkg.name();
-            every!(
+            and!(
                 ignores.is_empty() || !ignores.contains(name),
                 ignore_groups.is_empty() || !pkg.groups().iter().any(|g| ignore_groups.contains(g)),
                 dbs.iter().all(|db| db.pkg(name).is_err()),

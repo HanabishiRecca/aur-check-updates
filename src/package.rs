@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod tests;
+
 use crate::{
     print,
     types::{Arr, Str},
@@ -56,6 +59,3 @@ pub fn calc_lengths(state: &[Status]) -> (usize, usize) {
         _ => prev,
     })
 }
-
-#[cfg(test)]
-mod tests;

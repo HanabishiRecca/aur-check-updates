@@ -5,13 +5,10 @@ use std::{
     path::PathBuf,
 };
 
+const DB_DIR: &str = "sync";
 const DB_EXT: &str = ".db";
 
-fn is_db(name: &str) -> bool {
-    name.len() > DB_EXT.len() && name.ends_with(DB_EXT)
-}
-
-macro_rules! res {
+macro_rules! R {
     ($e: expr) => {
         match $e {
             Ok(e) => e,
@@ -20,16 +17,34 @@ macro_rules! res {
     };
 }
 
+macro_rules! N {
+    ($e: expr) => {
+        if $e {
+            return None;
+        }
+    };
+}
+
+macro_rules! Y {
+    ($e: expr) => {
+        N!(!$e)
+    };
+}
+
 fn map(entry: Result<DirEntry>) -> Option<Result<Str>> {
-    let entry = res!(entry);
+    let entry = R!(entry);
+    Y!(R!(entry.metadata()).is_file());
+
     let mut name = entry.file_name().into_string().ok()?;
-    (is_db(&name) && res!(entry.metadata()).is_file()).then_some(())?;
+    Y!(name.ends_with(DB_EXT));
     name.truncate(name.len() - DB_EXT.len());
+    N!(name.is_empty());
+
     Some(Ok(Str::from(name)))
 }
 
 pub fn find_repos(dbpath: &str) -> Result<Arr<Str>> {
-    fs::read_dir(PathBuf::from_iter([dbpath, "sync"]))?
+    fs::read_dir(PathBuf::from_iter([dbpath, DB_DIR]))?
         .filter_map(map)
-        .collect::<Result<Arr<_>>>()
+        .collect()
 }

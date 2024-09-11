@@ -1,8 +1,12 @@
+mod error;
+#[cfg(test)]
+mod tests;
+
 use crate::{
     print::ColorMode,
     types::{Arr, Str},
 };
-use std::{error, fmt};
+use error::Error;
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct Config {
@@ -54,26 +58,6 @@ impl Config {
 
     pub fn timeout(&self) -> Option<u64> {
         self.timeout
-    }
-}
-
-#[derive(Debug)]
-pub enum Error {
-    NoValue(Str),
-    InvalidValue(Str, Str),
-    Unknown(Str),
-}
-
-impl error::Error for Error {}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use Error::*;
-        match self {
-            NoValue(arg) => write!(f, "option '{arg}' requires value"),
-            InvalidValue(arg, value) => write!(f, "invalid value '{value}' for option '{arg}'"),
-            Unknown(arg) => write!(f, "unknown option '{arg}'"),
-        }
     }
 }
 
@@ -155,6 +139,3 @@ pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> Result<Opti
 
     Ok(Some(config))
 }
-
-#[cfg(test)]
-mod tests;
