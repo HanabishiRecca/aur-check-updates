@@ -37,8 +37,10 @@ fn map(entry: Result<DirEntry>) -> Option<Result<Str>> {
 
     let mut name = entry.file_name().into_string().ok()?;
     Y!(name.ends_with(DB_EXT));
-    name.truncate(name.len() - DB_EXT.len());
-    N!(name.is_empty());
+
+    let len = name.len().checked_sub(DB_EXT.len())?;
+    Y!(len > 0);
+    name.truncate(len);
 
     Some(Ok(Str::from(name)))
 }
