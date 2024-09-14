@@ -30,11 +30,11 @@ impl Config {
         }
     }
 
-    pub fn ignores(&self) -> Option<&[impl AsRef<str>]> {
+    pub fn ignores(&self) -> Option<&[Str]> {
         self.ignores.as_deref()
     }
 
-    pub fn ignore_groups(&self) -> Option<&[impl AsRef<str>]> {
+    pub fn ignore_groups(&self) -> Option<&[Str]> {
         self.ignore_groups.as_deref()
     }
 
@@ -46,7 +46,7 @@ impl Config {
         self.dbpath.as_deref()
     }
 
-    pub fn repos(&self) -> Option<&[impl AsRef<str>]> {
+    pub fn repos(&self) -> Option<&[Str]> {
         self.repos.as_deref()
     }
 

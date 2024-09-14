@@ -66,11 +66,12 @@ fn run() -> R {
     let ignores = config.ignores().unwrap_or(&[]);
     let ignore_groups = config.ignore_groups().unwrap_or(&[]);
 
-    let packages = match config.repos() {
-        Some(repos) => alpm::find_foreign_packages(dbpath, repos, ignores, ignore_groups)?,
-        _ => alpm::find_foreign_packages(dbpath, &io::find_repos(dbpath)?, ignores, ignore_groups)?,
+    let repos = match config.repos() {
+        Some(r) => r,
+        _ => &io::find_repos(dbpath)?,
     };
 
+    let packages = alpm::find_foreign_packages(dbpath, repos, ignores, ignore_groups)?;
     let endpoint = config.endpoint().unwrap_or(DEFAULT_ENDPOINT);
     let timeout = config.timeout().unwrap_or(DEFAULT_TIMEOUT);
     check_updates(packages, endpoint, timeout)
