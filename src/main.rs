@@ -6,6 +6,7 @@ mod package;
 mod print;
 mod request;
 mod types;
+mod utils;
 
 use crate::{
     print::ColorMode,

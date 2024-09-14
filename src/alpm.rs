@@ -1,4 +1,7 @@
-use crate::types::{Arr, Str};
+use crate::{
+    types::{Arr, Str},
+    utils,
+};
 use alpm::{Alpm, Db, Event, Result, SigLevel};
 use std::collections::HashSet;
 
@@ -28,12 +31,6 @@ fn to_hashset(source: &[impl AsRef<str>]) -> HashSet<&str> {
     HashSet::from_iter(source.iter().map(AsRef::as_ref))
 }
 
-macro_rules! and {
-    ($($e: expr),+ $(,)?) => {
-        $(($e)) && +
-    };
-}
-
 pub fn find_foreign_packages(
     dbpath: &str,
     repos: &[impl AsRef<str>],
@@ -51,12 +48,12 @@ pub fn find_foreign_packages(
         .into_iter()
         .filter_map(|pkg| {
             let name = pkg.name();
-            and!(
-                ignores.is_empty() || !ignores.contains(name),
-                ignore_groups.is_empty() || !pkg.groups().iter().any(|g| ignore_groups.contains(g)),
-                dbs.iter().all(|db| db.pkg(name).is_err()),
-            )
-            .then(|| (Str::from(name), Str::from(pkg.version().as_str())))
+            utils::filter!(ignores.is_empty() || !ignores.contains(name));
+            utils::filter!(
+                ignore_groups.is_empty() || !pkg.groups().iter().any(|g| ignore_groups.contains(g))
+            );
+            utils::filter!(dbs.iter().all(|db| db.pkg(name).is_err()));
+            Some((Str::from(name), Str::from(pkg.version().as_str())))
         })
         .collect())
 }
