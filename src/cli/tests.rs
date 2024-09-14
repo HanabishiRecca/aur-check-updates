@@ -17,6 +17,7 @@ fn cmp(a: &[impl AsRef<str>], b: &[impl AsRef<str>]) {
 fn args() {
     let ignores = ["foo", "bar", "baz"];
     let ignore_groups = ["custom"];
+    let ignore_suffixes = ["-debug"];
     let dbpath = "/path/to/db";
     let repos = ["core", "extra", "multilib"];
     let endpoint = "https://";
@@ -27,6 +28,8 @@ fn args() {
         &ignores.join(","),
         "--ignoregroup",
         &ignore_groups.join(","),
+        "--ignoresuffix",
+        &ignore_suffixes.join(","),
         "--color",
         "never",
         "--dbpath",
@@ -43,6 +46,7 @@ fn args() {
     let config = read_args!(args).unwrap().unwrap();
     cmp(config.ignores().unwrap(), &ignores);
     cmp(config.ignore_groups().unwrap(), &ignore_groups);
+    cmp(config.ignore_suffixes().unwrap(), &ignore_suffixes);
     assert_eq!(config.color_mode(), Some(ColorMode::Never));
     assert_eq!(config.dbpath(), Some(dbpath));
     cmp(config.repos().unwrap(), &repos);
