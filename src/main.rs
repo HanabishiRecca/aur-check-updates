@@ -15,6 +15,7 @@ use crate::{
 use std::{env, error::Error, process::ExitCode};
 
 const DEFAULT_DBPATH: &str = "/var/lib/pacman";
+const DEFAULT_IGNORE_SUFFIXES: &[&str] = &["-debug"];
 const DEFAULT_ENDPOINT: &str = "https://aur.archlinux.org/rpc/v5/info";
 const DEFAULT_TIMEOUT: u64 = 5000;
 
@@ -67,12 +68,19 @@ fn run() -> R {
     let ignores = config.ignores().unwrap_or(&[]);
     let ignore_groups = config.ignore_groups().unwrap_or(&[]);
 
+    let ignore_suffixes = match config.ignore_suffixes() {
+        Some(s) => s,
+        _ => &utils::copy(DEFAULT_IGNORE_SUFFIXES),
+    };
+
     let repos = match config.repos() {
         Some(r) => r,
         _ => &io::find_repos(dbpath)?,
     };
 
-    let packages = alpm::find_foreign_packages(dbpath, repos, ignores, ignore_groups)?;
+    let packages =
+        alpm::find_foreign_packages(dbpath, repos, ignores, ignore_groups, ignore_suffixes)?;
+
     let endpoint = config.endpoint().unwrap_or(DEFAULT_ENDPOINT);
     let timeout = config.timeout().unwrap_or(DEFAULT_TIMEOUT);
     check_updates(packages, endpoint, timeout)

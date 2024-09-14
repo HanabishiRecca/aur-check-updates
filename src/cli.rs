@@ -10,6 +10,7 @@ use crate::{
 pub struct Config {
     ignores: Option<Arr<Str>>,
     ignore_groups: Option<Arr<Str>>,
+    ignore_suffixes: Option<Arr<Str>>,
     color_mode: Option<ColorMode>,
     dbpath: Option<Str>,
     repos: Option<Arr<Str>>,
@@ -22,6 +23,7 @@ impl Config {
         Config {
             ignores: None,
             ignore_groups: None,
+            ignore_suffixes: None,
             color_mode: None,
             dbpath: None,
             repos: None,
@@ -36,6 +38,10 @@ impl Config {
 
     pub fn ignore_groups(&self) -> Option<&[Str]> {
         self.ignore_groups.as_deref()
+    }
+
+    pub fn ignore_suffixes(&self) -> Option<&[Str]> {
+        self.ignore_suffixes.as_deref()
     }
 
     pub fn color_mode(&self) -> Option<ColorMode> {
@@ -125,6 +131,9 @@ pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> Result<Opti
             }
             "--ignoregroup" => {
                 config.ignore_groups = Some(list!());
+            }
+            "--ignoresuffix" => {
+                config.ignore_suffixes = Some(list!());
             }
             "--color" => {
                 let value = next!();
