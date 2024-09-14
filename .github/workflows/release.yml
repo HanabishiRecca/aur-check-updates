@@ -25,9 +25,9 @@ jobs:
 
       - name: Prepare
         run: |
-          pacman -Syu --needed --noconfirm --color always "rust"
-          mkdir ".cargo"
-          cp -pv ".github/workflows/config.toml" -t ".cargo"
+          pacman -Syu --needed --noconfirm 'rust'
+          mkdir '.cargo'
+          cp -pv '.github/workflows/config.toml' -t '.cargo'
           cargo fetch -v --locked --target "${CARGO_BUILD_TARGET}"
 
       - name: Run tests
