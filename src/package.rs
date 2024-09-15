@@ -10,17 +10,28 @@ use std::{cmp::Ordering, collections::HashMap};
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub enum Status {
-    UpToDate(Str, Str),
-    HasUpdate(Str, Str, Str),
-    NotInAUR(Str, Str),
+    UpToDate,
+    HasUpdate(Str),
+    NotInAUR,
 }
 
-pub fn print_status(status: Status, nlen: usize, vlen: usize) {
+#[cfg_attr(test, derive(Debug, PartialEq))]
+pub struct Pkg {
+    name: Str,
+    ver: Str,
+    status: Status,
+}
+
+fn pkg(name: Str, ver: Str, status: Status) -> Pkg {
+    Pkg { name, ver, status }
+}
+
+pub fn print_status(pkg: Pkg, nlen: usize, vlen: usize) {
     use Status::*;
-    match status {
-        UpToDate(name, ver) => print::package(name, ver, nlen),
-        HasUpdate(name, ver, new_ver) => print::update(name, ver, new_ver, nlen, vlen, true),
-        NotInAUR(name, ver) => print::update(name, ver, "[not found in AUR]", nlen, vlen, false),
+    match pkg.status {
+        UpToDate => print::package(pkg.name, pkg.ver, nlen),
+        HasUpdate(new_ver) => print::update(pkg.name, pkg.ver, new_ver, nlen, vlen, true),
+        NotInAUR => print::update(pkg.name, pkg.ver, "[not found in AUR]", nlen, vlen, false),
     }
 }
 
@@ -29,33 +40,30 @@ pub fn into_state(
     mut updates: HashMap<Str, Str>,
     keep_updated: bool,
     keep_failed: bool,
-) -> Arr<Status> {
+) -> Arr<Pkg> {
     use Status::*;
     packages
         .into_iter()
         .filter_map(|(name, ver)| match updates.remove(&name) {
             Some(new_ver) => match vercmp(new_ver.as_ref(), ver.as_ref()) {
-                Ordering::Greater => Some(HasUpdate(name, ver, new_ver)),
-                _ => keep_updated.then_some(UpToDate(name, ver)),
+                Ordering::Greater => Some(pkg(name, ver, HasUpdate(new_ver))),
+                _ => keep_updated.then_some(pkg(name, ver, UpToDate)),
             },
-            _ => keep_failed.then_some(NotInAUR(name, ver)),
+            _ => keep_failed.then_some(pkg(name, ver, NotInAUR)),
         })
         .collect()
 }
 
-pub fn count_updates(state: &[Status]) -> usize {
+pub fn count_updates(state: &[Pkg]) -> usize {
     use Status::*;
     state
         .iter()
-        .filter(|status| matches!(status, HasUpdate(_, _, _)))
+        .filter(|pkg| matches!(pkg.status, HasUpdate(_)))
         .count()
 }
 
-pub fn calc_lengths(state: &[Status]) -> (usize, usize) {
-    use Status::*;
-    state.iter().fold((0, 0), |prev, status| match status {
-        UpToDate(name, ver) | HasUpdate(name, ver, _) | NotInAUR(name, ver) => {
-            (name.len().max(prev.0), ver.len().max(prev.1))
-        }
+pub fn calc_lengths(state: &[Pkg]) -> (usize, usize) {
+    state.iter().fold((0, 0), |prev, pkg| {
+        (pkg.name.len().max(prev.0), pkg.ver.len().max(prev.1))
     })
 }

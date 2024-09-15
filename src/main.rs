@@ -88,8 +88,8 @@ fn run() -> R {
 
     let (nlen, vlen) = package::calc_lengths(&state);
 
-    for status in state {
-        package::print_status(status, nlen, vlen);
+    for pkg in state {
+        package::print_status(pkg, nlen, vlen);
     }
 
     Ok(())
