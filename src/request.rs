@@ -5,6 +5,10 @@ use std::time::Duration;
 pub fn send(url: &str, timeout: u64) -> Result<Arr<u8>, Error> {
     let mut easy = Easy::new();
     easy.url(url)?;
+    easy.get(true)?;
+    easy.accept_encoding("")?;
+    easy.fail_on_error(true)?;
+    easy.tcp_nodelay(true)?;
     easy.timeout(Duration::from_millis(timeout))?;
 
     let mut result = Vec::new();
