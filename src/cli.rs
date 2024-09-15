@@ -6,6 +6,7 @@ use crate::{
     types::{Arr, Str},
 };
 
+#[derive(Default)]
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct Config {
     show_updated: Option<bool>,
@@ -21,21 +22,6 @@ pub struct Config {
 }
 
 impl Config {
-    fn new() -> Self {
-        Config {
-            show_updated: None,
-            show_failed: None,
-            ignores: None,
-            ignore_groups: None,
-            ignore_suffixes: None,
-            color_mode: None,
-            dbpath: None,
-            repos: None,
-            endpoint: None,
-            timeout: None,
-        }
-    }
-
     pub fn show_updated(&self) -> Option<bool> {
         self.show_updated
     }
@@ -120,7 +106,7 @@ fn parse_list<'a, T: FromIterator<impl From<&'a str>>>(str: &'a str) -> T {
 }
 
 pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> Result<Option<Config>> {
-    let mut config = Config::new();
+    let mut config = Config::default();
 
     while let Some(arg) = args.next() {
         macro_rules! next {

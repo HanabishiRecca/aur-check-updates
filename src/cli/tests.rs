@@ -62,7 +62,7 @@ macro_rules! test_args {
 
 #[test]
 fn no_args() {
-    test_args!([""; 0], Some(Config::new()));
+    test_args!([""; 0], Some(Config::default()));
 }
 
 #[test]
