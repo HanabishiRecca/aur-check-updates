@@ -7,6 +7,8 @@ Usage:
 
 Options:
 
+  [1m-u[0m, [1m--updated[0m                    also show up-to-date packages
+  [1m-n[0m, [1m--nofailed[0m                   hide packages not found in AUR
       [1m--ignore <packages>[0m          do not check updates for packages [1]
       [1m--ignoregroup <groups>[0m       do not check updates for package groups [1]
       [1m--ignoresuffix <suffixes>[0m    do not check updates for packages with suffixes [1]

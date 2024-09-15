@@ -55,6 +55,14 @@ pub fn message(s: impl Display) {
     P!(" {s}", "\x1b[0m {s}\x1b[0m");
 }
 
+pub fn package(name: impl Display, ver: impl Display, nlen: usize) {
+    P!(
+        "{name:0$} {ver}",
+        "\x1b[0;1m{name:0$} \x1b[32;1m{ver}\x1b[0m",
+        nlen,
+    );
+}
+
 pub fn update(
     name: impl Display,
     ver: impl Display,

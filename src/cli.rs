@@ -8,6 +8,8 @@ use crate::{
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct Config {
+    show_updated: Option<bool>,
+    show_failed: Option<bool>,
     ignores: Option<Arr<Str>>,
     ignore_groups: Option<Arr<Str>>,
     ignore_suffixes: Option<Arr<Str>>,
@@ -21,6 +23,8 @@ pub struct Config {
 impl Config {
     fn new() -> Self {
         Config {
+            show_updated: None,
+            show_failed: None,
             ignores: None,
             ignore_groups: None,
             ignore_suffixes: None,
@@ -30,6 +34,14 @@ impl Config {
             endpoint: None,
             timeout: None,
         }
+    }
+
+    pub fn show_updated(&self) -> Option<bool> {
+        self.show_updated
+    }
+
+    pub fn show_failed(&self) -> Option<bool> {
+        self.show_failed
     }
 
     pub fn ignores(&self) -> Option<&[Str]> {
@@ -126,6 +138,12 @@ pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> Result<Opti
         }
         match arg.as_ref() {
             "" => {}
+            "-u" | "--updated" => {
+                config.show_updated = Some(true);
+            }
+            "-n" | "--nofailed" => {
+                config.show_failed = Some(false);
+            }
             "--ignore" => {
                 config.ignores = Some(list!());
             }

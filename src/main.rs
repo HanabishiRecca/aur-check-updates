@@ -18,6 +18,8 @@ const DEFAULT_IGNORE_GROUPS: &[&str] = &[];
 const DEFAULT_IGNORE_SUFFIXES: &[&str] = &["-debug"];
 const DEFAULT_ENDPOINT: &str = "https://aur.archlinux.org/rpc/v5/info";
 const DEFAULT_TIMEOUT: u64 = 5000;
+const DEFAULT_SHOW_UPDATED: bool = false;
+const DEFAULT_SHOW_FAILED: bool = true;
 
 type R = Result<(), Box<dyn Error>>;
 
@@ -72,7 +74,13 @@ fn run() -> R {
     let url = aur::url(default!(config.endpoint(), DEFAULT_ENDPOINT), &packages);
     let response = request::send(&url, default!(config.timeout(), DEFAULT_TIMEOUT))?;
     let updates = aur::parse(core::str::from_utf8(&response)?)?;
-    let state = package::into_state(packages, updates);
+
+    let state = package::into_state(
+        packages,
+        updates,
+        default!(config.show_updated(), DEFAULT_SHOW_UPDATED),
+        default!(config.show_failed(), DEFAULT_SHOW_FAILED),
+    );
 
     if package::count_updates(&state) == 0 {
         print::message("no updates");
