@@ -4,7 +4,7 @@ run-name: Build release @ ${{ github.event.release.tag_name }}
 on:
   release:
     types:
-      - released
+      - published
 
 env:
   APP: aur-check-updates
@@ -28,13 +28,13 @@ jobs:
           pacman -Syu --needed --noconfirm 'rust'
           mkdir '.cargo'
           cp -pv '.github/workflows/config.toml' -t '.cargo'
-          cargo fetch -v --locked --target "${CARGO_BUILD_TARGET}"
+          cargo fetch --locked --target "${CARGO_BUILD_TARGET}"
 
       - name: Run tests
-        run: cargo test -v --frozen
+        run: cargo test --frozen
 
       - name: Build
-        run: cargo build -v --frozen --release
+        run: cargo build --frozen --release
 
       - name: Upload archive
         run: |
