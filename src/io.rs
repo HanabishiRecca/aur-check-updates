@@ -1,7 +1,4 @@
-use crate::{
-    types::{Arr, Str},
-    utils::filter,
-};
+use crate::types::{Arr, Str};
 use std::{
     fs::{self, DirEntry},
     io::Result,
@@ -20,15 +17,23 @@ macro_rules! R {
     };
 }
 
+macro_rules! C {
+    ($e: expr) => {
+        if !$e {
+            return None;
+        }
+    };
+}
+
 fn map(entry: Result<DirEntry>) -> Option<Result<Str>> {
     let entry = R!(entry);
-    filter!(R!(entry.metadata()).is_file());
+    C!(R!(entry.metadata()).is_file());
 
     let mut name = entry.file_name().into_string().ok()?;
-    filter!(name.ends_with(DB_EXT));
+    C!(name.ends_with(DB_EXT));
 
     let len = name.len().checked_sub(DB_EXT.len())?;
-    filter!(len > 0);
+    C!(len > 0);
     name.truncate(len);
 
     Some(Ok(Str::from(name)))

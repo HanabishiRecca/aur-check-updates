@@ -55,7 +55,7 @@ fn args() {
 }
 
 macro_rules! test_args {
-    ($a: expr, $r: expr $(,)?) => {
+    ($a: expr, $r: expr) => {
         assert_eq!(read_args!($a).unwrap(), $r)
     };
 }
@@ -67,11 +67,11 @@ fn no_args() {
 
 #[test]
 fn help() {
-    test_args!(["--ignore", "foo", "-h", "--foo",], None);
+    test_args!(["--ignore", "foo", "-h", "--foo"], None);
 }
 
 macro_rules! test_error {
-    ($a: expr, $r: pat $(,)?) => {
+    ($a: expr, $r: pat) => {
         assert!(matches!(read_args!($a), Err($r)))
     };
 }

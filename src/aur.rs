@@ -1,6 +1,6 @@
 use crate::types::{Arr, Str};
 use serde::Deserialize;
-use serde_json::{from_str, Error};
+use serde_json::{self, Error};
 use std::collections::HashMap;
 
 #[derive(Deserialize)]
@@ -25,7 +25,7 @@ pub fn url(endpoint: &str, pkgs: &[(impl AsRef<str>, impl AsRef<str>)]) -> Str {
 }
 
 pub fn parse(data: &str) -> Result<HashMap<Str, Str>, Error> {
-    Ok(from_str::<Response>(data)?
+    Ok(serde_json::from_str::<Response>(data)?
         .results
         .into_vec() // rust-lang/rust#59878
         .into_iter()

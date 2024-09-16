@@ -21,10 +21,8 @@ const DEFAULT_TIMEOUT: u64 = 5000;
 const DEFAULT_SHOW_UPDATED: bool = false;
 const DEFAULT_SHOW_FAILED: bool = true;
 
-type R = Result<(), Box<dyn Error>>;
-
 macro_rules! default {
-    ($option: expr, $default: expr $(,)?) => {
+    ($option: expr, $default: expr) => {
         match $option {
             Some(value) => value,
             _ => $default,
@@ -45,7 +43,7 @@ fn print_help() {
     );
 }
 
-fn run() -> R {
+fn run() -> Result<(), Box<dyn Error>> {
     let Some(config) = cli::read_args(env::args().skip(1))? else {
         print_help();
         return Ok(());

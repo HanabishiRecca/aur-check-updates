@@ -5,7 +5,6 @@ use crate::{
     print,
     types::{Arr, Str},
 };
-use alpm::vercmp;
 use std::{cmp::Ordering, collections::HashMap};
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
@@ -45,7 +44,7 @@ pub fn into_state(
     packages
         .into_iter()
         .filter_map(|(name, ver)| match updates.remove(&name) {
-            Some(new_ver) => match vercmp(new_ver.as_ref(), ver.as_ref()) {
+            Some(new_ver) => match alpm::vercmp(new_ver.as_ref(), ver.as_ref()) {
                 Ordering::Greater => Some(pkg(name, ver, HasUpdate(new_ver))),
                 _ => keep_updated.then_some(pkg(name, ver, UpToDate)),
             },

@@ -8,13 +8,3 @@ pub fn copy(input: &[impl AsRef<str>]) -> Arr<Str> {
 pub fn to_hashset(source: &[impl AsRef<str>]) -> HashSet<&str> {
     HashSet::from_iter(source.iter().map(AsRef::as_ref))
 }
-
-macro_rules! filter {
-    ($e: expr) => {
-        if !$e {
-            return None;
-        }
-    };
-}
-
-pub(crate) use filter;

@@ -1,7 +1,7 @@
 use std::{
     fmt::Display,
-    io::{stdout, IsTerminal},
-    sync::atomic::{AtomicBool, Ordering::Relaxed},
+    io::{self, IsTerminal},
+    sync::atomic::{AtomicBool, Ordering},
 };
 
 static COLOR: AtomicBool = AtomicBool::new(false);
@@ -18,17 +18,17 @@ pub fn set_color_mode(mode: ColorMode) {
     use ColorMode::*;
     COLOR.store(
         match mode {
-            Auto => stdout().is_terminal(),
+            Auto => io::stdout().is_terminal(),
             Always => true,
             Never => false,
         },
-        Relaxed,
+        Ordering::Relaxed,
     );
 }
 
 macro_rules! print_to {
     ($p: ident, $n: expr, $c: expr $(, $rest: expr)* $(,)?) => {
-        match COLOR.load(Relaxed) {
+        match COLOR.load(Ordering::Relaxed) {
             true => $p!($c $(, $rest)*),
             false => $p!($n  $(, $rest)*),
         }
@@ -41,7 +41,7 @@ macro_rules! P {
     };
 }
 
-macro_rules! PE {
+macro_rules! E {
     ($n: expr, $c: expr  $(, $rest: expr)* $(,)?) => {
         print_to!(eprintln, $n, $c $(, $rest)*)
     };
@@ -85,9 +85,9 @@ pub fn update(
 }
 
 pub fn error(e: impl Display) {
-    PE!("error: {e}", "\x1b[31;1merror:\x1b[0m {e}\x1b[0m");
+    E!("error: {e}", "\x1b[31;1merror:\x1b[0m {e}\x1b[0m");
 }
 
 pub fn warning(w: impl Display) {
-    PE!("warning: {w}", "\x1b[33;1mwarning:\x1b[0m {w}\x1b[0m");
+    E!("warning: {w}", "\x1b[33;1mwarning:\x1b[0m {w}\x1b[0m");
 }
