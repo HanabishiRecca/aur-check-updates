@@ -19,6 +19,7 @@ pub struct Config {
     repos: Option<Arr<Str>>,
     endpoint: Option<Str>,
     timeout: Option<u64>,
+    raw: Option<bool>,
 }
 
 impl Config {
@@ -60,6 +61,10 @@ impl Config {
 
     pub fn timeout(&self) -> Option<u64> {
         self.timeout
+    }
+
+    pub fn raw(&self) -> Option<bool> {
+        self.raw
     }
 }
 
@@ -164,6 +169,9 @@ pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> Result<Opti
                     Ok(t) => t,
                     _ => E!(InvalidValue(F!(arg), F!(value))),
                 });
+            }
+            "--raw" => {
+                config.raw = Some(true);
             }
             "-h" | "--help" => return Ok(None),
             _ => E!(Unknown(F!(arg))),
