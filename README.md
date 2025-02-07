@@ -26,6 +26,7 @@ If you need a fully-featured AUR helper, consider using [`paru`](https://github.
 | `--repos <names>`           | Override working repositories. By default all repositories from `dbpath/sync` directory are used. <sup>1</sup>                        |
 | `--endpoint <url>`          | Change AUR info endpoint url. Default value is `https://aur.archlinux.org/rpc/v5/info`.                                               |
 | `--timeout <ms>`            | Set a timeout for network connection in milliseconds. Default value is `5000`.                                                        |
+| `--raw`                     | Disable info messages, color and formatting.                                                                                          |
 | `-h`, `--help`              | Display the help message.                                                                                                             |
 
 1. Multiple values could be specified using a comma-separated list.

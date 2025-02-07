@@ -20,6 +20,7 @@ const DEFAULT_ENDPOINT: &str = "https://aur.archlinux.org/rpc/v5/info";
 const DEFAULT_TIMEOUT: u64 = 5000;
 const DEFAULT_SHOW_UPDATED: bool = false;
 const DEFAULT_SHOW_FAILED: bool = true;
+const DEFAULT_RAW: bool = false;
 
 macro_rules! default {
     ($option: expr, $default: expr) => {
@@ -49,8 +50,16 @@ fn run() -> Result<(), Box<dyn Error>> {
         return Ok(());
     };
 
-    print::set_color_mode(default!(config.color_mode(), DEFAULT_COLOR_MODE));
-    print::header("Checking AUR updates...");
+    let raw = default!(config.raw(), DEFAULT_RAW);
+
+    print::set_color_mode(match raw {
+        false => default!(config.color_mode(), DEFAULT_COLOR_MODE),
+        _ => ColorMode::Never,
+    });
+
+    if !raw {
+        print::header("Checking AUR updates...");
+    }
 
     let dbpath = default!(config.dbpath(), DEFAULT_DBPATH);
     let repos = default!(config.repos(), &io::find_repos(dbpath)?);
@@ -65,7 +74,9 @@ fn run() -> Result<(), Box<dyn Error>> {
         alpm::find_foreign_packages(dbpath, repos, ignores, ignore_groups, ignore_suffixes)?;
 
     if packages.is_empty() {
-        print::message("no packages to check");
+        if !raw {
+            print::message("no packages to check");
+        }
         return Ok(());
     }
 
@@ -80,11 +91,14 @@ fn run() -> Result<(), Box<dyn Error>> {
         default!(config.show_failed(), DEFAULT_SHOW_FAILED),
     );
 
-    if package::count_updates(&state) == 0 {
+    if !raw && package::count_updates(&state) == 0 {
         print::message("no updates");
     }
 
-    let (nlen, vlen) = package::calc_lengths(&state);
+    let (nlen, vlen) = match raw {
+        false => package::calc_lengths(&state),
+        _ => (0, 0),
+    };
 
     for pkg in state {
         package::print_status(pkg, nlen, vlen);

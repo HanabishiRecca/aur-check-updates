@@ -17,6 +17,7 @@ Options:
       [1m--repos <names>[0m              override working repositories [1]
       [1m--endpoint <url>[0m             change AUR info endpoint url
       [1m--timeout <ms>[0m               set a timeout for network connection in milliseconds
+      [1m--raw[0m                        disable info messages, color and formatting
   [1m-h[0m, [1m--help[0m                       display the help message
 
 1. Multiple values could be specified using a comma-separated list.
