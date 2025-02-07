@@ -77,8 +77,8 @@ pub fn update(
     };
 
     P!(
-        "{name:0$} {ver:1$} => {new_ver}",
-        "\x1b[0;1m{name:0$} \x1b[31;1m{ver:1$}\x1b[0m => {color}{new_ver}\x1b[0m",
+        "{name:0$} {ver:1$} -> {new_ver}",
+        "\x1b[0;1m{name:0$} \x1b[31;1m{ver:1$}\x1b[0m -> {color}{new_ver}\x1b[0m",
         nlen,
         vlen,
     );
