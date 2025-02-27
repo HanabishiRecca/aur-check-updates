@@ -1,8 +1,8 @@
 [package]
 name = "aur-check-updates"
 version = "1.1.2"
-edition = "2021"
-rust-version = "1.70"
+edition = "2024"
+rust-version = "1.85"
 description = "A very basic CLI app for checking updates from Arch User Repository (AUR)"
 repository = "https://github.com/HanabishiRecca/aur-check-updates"
 license = "MIT"
