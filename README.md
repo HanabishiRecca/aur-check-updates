@@ -43,7 +43,7 @@ You can download prebuilt binaries from [releases](https://github.com/HanabishiR
 
 ## Building from the source
 
-**Rust 1.70 or up is required.**
+**Rust 1.85 or up is required.**
 
 Install dependencies:
 
