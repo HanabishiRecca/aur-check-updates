@@ -29,8 +29,8 @@ pub fn print_status(pkg: Pkg, nlen: usize, vlen: usize) {
     use Status::*;
     match pkg.status {
         UpToDate => print::package(pkg.name, pkg.ver, nlen),
-        HasUpdate(new_ver) => print::update(pkg.name, pkg.ver, new_ver, nlen, vlen, true),
-        NotInAUR => print::update(pkg.name, pkg.ver, "[not found in AUR]", nlen, vlen, false),
+        HasUpdate(new_ver) => print::update(pkg.name, &pkg.ver, &new_ver, nlen, vlen),
+        NotInAUR => print::not_found(pkg.name, &pkg.ver, nlen, vlen),
     }
 }
 
