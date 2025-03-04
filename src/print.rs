@@ -1,3 +1,4 @@
+use crate::utils;
 use std::{
     fmt::Display,
     io::{self, IsTerminal},
@@ -63,22 +64,28 @@ pub fn package(name: impl Display, ver: impl Display, nlen: usize) {
     );
 }
 
-pub fn update(
-    name: impl Display,
-    ver: impl Display,
-    new_ver: impl Display,
-    nlen: usize,
-    vlen: usize,
-    active: bool,
-) {
-    let color = match active {
-        true => "\x1b[32;1m",
-        _ => "\x1b[2m",
-    };
+pub fn update(name: impl Display, ver: &str, new: &str, nlen: usize, vlen: usize) {
+    if !COLOR.load(Ordering::Relaxed) {
+        println!("{name:0$} {ver:1$} -> {new}", nlen, vlen);
+        return;
+    }
 
+    let pos = utils::str_diff(ver, new);
+    let (va, vb) = ver.split_at(pos);
+    let (na, nb) = new.split_at(pos);
+
+    println!(
+        "\x1b[0;1m{name:0$} {va}\x1b[31;1m{vb:1$}\x1b[0m -> \x1b[0;1m{na}\x1b[32;1m{nb}\x1b[0m",
+        nlen,
+        vlen - va.len(),
+    );
+}
+
+pub fn not_found(name: impl Display, ver: impl Display, nlen: usize, vlen: usize) {
+    const MESSAGE: &str = "[not found in AUR]";
     P!(
-        "{name:0$} {ver:1$} -> {new_ver}",
-        "\x1b[0;1m{name:0$} \x1b[31;1m{ver:1$}\x1b[0m -> {color}{new_ver}\x1b[0m",
+        "{name:0$} {ver:1$} -> {MESSAGE}",
+        "\x1b[0;1m{name:0$} \x1b[31;1m{ver:1$}\x1b[0m -> \x1b[2m{MESSAGE}\x1b[0m",
         nlen,
         vlen,
     );
