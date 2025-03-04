@@ -52,9 +52,10 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     let raw = default!(config.raw(), DEFAULT_RAW);
 
-    print::set_color_mode(match raw {
-        false => default!(config.color_mode(), DEFAULT_COLOR_MODE),
-        _ => ColorMode::Never,
+    print::set_color_mode(if raw {
+        ColorMode::Never
+    } else {
+        default!(config.color_mode(), DEFAULT_COLOR_MODE)
     });
 
     if !raw {
@@ -95,13 +96,14 @@ fn run() -> Result<(), Box<dyn Error>> {
         print::message("no updates");
     }
 
-    let (nlen, vlen) = match raw {
-        false => package::calc_lengths(&state),
-        _ => (0, 0),
+    let (nlen, vlen) = if raw {
+        (0, 0)
+    } else {
+        package::calc_lengths(&state)
     };
 
     for pkg in state {
-        package::print_status(pkg, nlen, vlen);
+        pkg.print(nlen, vlen);
     }
 
     Ok(())

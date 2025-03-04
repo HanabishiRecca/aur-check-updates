@@ -29,10 +29,8 @@ pub fn set_color_mode(mode: ColorMode) {
 
 macro_rules! print_to {
     ($p: ident, $n: expr, $c: expr $(, $rest: expr)* $(,)?) => {
-        match COLOR.load(Ordering::Relaxed) {
-            true => $p!($c $(, $rest)*),
-            false => $p!($n  $(, $rest)*),
-        }
+        if COLOR.load(Ordering::Relaxed) { $p!($c $(, $rest)*) }
+        else { $p!($n  $(, $rest)*) }
     };
 }
 
@@ -48,15 +46,15 @@ macro_rules! E {
     };
 }
 
-pub fn header(s: impl Display) {
+pub fn header(s: &str) {
     P!(":: {s}", "\x1b[34;1m::\x1b[0;1m {s}\x1b[0m");
 }
 
-pub fn message(s: impl Display) {
+pub fn message(s: &str) {
     P!(" {s}", "\x1b[0m {s}\x1b[0m");
 }
 
-pub fn package(name: impl Display, ver: impl Display, nlen: usize) {
+pub fn package(name: &str, ver: &str, nlen: usize) {
     P!(
         "{name:0$} {ver}",
         "\x1b[0;1m{name:0$} \x1b[32;1m{ver}\x1b[0m",
@@ -64,7 +62,7 @@ pub fn package(name: impl Display, ver: impl Display, nlen: usize) {
     );
 }
 
-pub fn update(name: impl Display, ver: &str, new: &str, nlen: usize, vlen: usize) {
+pub fn update(name: &str, ver: &str, new: &str, nlen: usize, vlen: usize) {
     if !COLOR.load(Ordering::Relaxed) {
         println!("{name:0$} {ver:1$} -> {new}", nlen, vlen);
         return;
@@ -81,7 +79,7 @@ pub fn update(name: impl Display, ver: &str, new: &str, nlen: usize, vlen: usize
     );
 }
 
-pub fn not_found(name: impl Display, ver: impl Display, nlen: usize, vlen: usize) {
+pub fn not_found(name: &str, ver: &str, nlen: usize, vlen: usize) {
     const MESSAGE: &str = "[not found in AUR]";
     P!(
         "{name:0$} {ver:1$} -> {MESSAGE}",

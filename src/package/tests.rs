@@ -27,9 +27,9 @@ fn state() {
     assert_eq!(
         state.as_ref(),
         [
-            pkg(S!("nop"), S!("1.0.0"), UpToDate),
-            pkg(S!("foo"), S!("1.0.0"), HasUpdate(S!("2.0.0"))),
-            pkg(S!("bar"), S!("1.0.0"), NotInAUR),
+            Pkg::new(S!("nop"), S!("1.0.0"), UpToDate),
+            Pkg::new(S!("foo"), S!("1.0.0"), HasUpdate(S!("2.0.0"))),
+            Pkg::new(S!("bar"), S!("1.0.0"), NotInAUR),
         ]
     );
 }
@@ -54,6 +54,6 @@ fn partial_state() {
     use Status::*;
     assert_eq!(
         state.as_ref(),
-        [pkg(S!("foo"), S!("1.0.0"), HasUpdate(S!("2.0.0")))]
+        [Pkg::new(S!("foo"), S!("1.0.0"), HasUpdate(S!("2.0.0")))]
     );
 }

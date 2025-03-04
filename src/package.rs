@@ -21,16 +21,18 @@ pub struct Pkg {
     status: Status,
 }
 
-fn pkg(name: Str, ver: Str, status: Status) -> Pkg {
-    Pkg { name, ver, status }
-}
+impl Pkg {
+    pub fn new(name: Str, ver: Str, status: Status) -> Self {
+        Pkg { name, ver, status }
+    }
 
-pub fn print_status(pkg: Pkg, nlen: usize, vlen: usize) {
-    use Status::*;
-    match pkg.status {
-        UpToDate => print::package(pkg.name, pkg.ver, nlen),
-        HasUpdate(new_ver) => print::update(pkg.name, &pkg.ver, &new_ver, nlen, vlen),
-        NotInAUR => print::not_found(pkg.name, &pkg.ver, nlen, vlen),
+    pub fn print(&self, nlen: usize, vlen: usize) {
+        use Status::*;
+        match &self.status {
+            UpToDate => print::package(&self.name, &self.ver, nlen),
+            HasUpdate(new_ver) => print::update(&self.name, &self.ver, new_ver, nlen, vlen),
+            NotInAUR => print::not_found(&self.name, &self.ver, nlen, vlen),
+        }
     }
 }
 
@@ -45,10 +47,10 @@ pub fn into_state(
         .into_iter()
         .filter_map(|(name, ver)| match updates.remove(&name) {
             Some(new_ver) => match alpm::vercmp(new_ver.as_ref(), ver.as_ref()) {
-                Ordering::Greater => Some(pkg(name, ver, HasUpdate(new_ver))),
-                _ => keep_updated.then_some(pkg(name, ver, UpToDate)),
+                Ordering::Greater => Some(Pkg::new(name, ver, HasUpdate(new_ver))),
+                _ => keep_updated.then_some(Pkg::new(name, ver, UpToDate)),
             },
-            _ => keep_failed.then_some(pkg(name, ver, NotInAUR)),
+            _ => keep_failed.then_some(Pkg::new(name, ver, NotInAUR)),
         })
         .collect()
 }
