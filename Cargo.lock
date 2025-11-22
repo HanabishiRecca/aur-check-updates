@@ -23,7 +23,7 @@ dependencies = [
 
 [[package]]
 name = "aur-check-updates"
-version = "1.1.4"
+version = "1.1.5"
 dependencies = [
  "alpm",
  "curl",
