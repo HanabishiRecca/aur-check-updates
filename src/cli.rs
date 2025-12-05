@@ -5,6 +5,7 @@ use crate::{
     print::ColorMode,
     types::{Arr, Str},
 };
+use std::{error, fmt, result};
 
 #[derive(Default)]
 #[cfg_attr(test, derive(Debug, PartialEq))]
@@ -75,10 +76,10 @@ pub enum Error {
     Unknown(Str),
 }
 
-impl std::error::Error for Error {}
+impl error::Error for Error {}
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use Error::*;
         match self {
             NoValue(arg) => write!(f, "option '{arg}' requires value"),
@@ -88,7 +89,7 @@ impl std::fmt::Display for Error {
     }
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = result::Result<T, Error>;
 
 macro_rules! E {
     ($e: expr) => {{
@@ -104,10 +105,7 @@ macro_rules! F {
 }
 
 fn parse_list<'a, T: FromIterator<impl From<&'a str>>>(str: &'a str) -> T {
-    str.split(',')
-        .filter(|s| !s.is_empty())
-        .map(From::from)
-        .collect()
+    str.split(',').filter(|s| !s.is_empty()).map(From::from).collect()
 }
 
 pub fn read_args(mut args: impl Iterator<Item = impl AsRef<str>>) -> Result<Option<Config>> {

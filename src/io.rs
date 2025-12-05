@@ -40,7 +40,5 @@ fn map(entry: Result<DirEntry>) -> Option<Result<Str>> {
 }
 
 pub fn find_repos(dbpath: &str) -> Result<Arr<Str>> {
-    fs::read_dir(PathBuf::from_iter([dbpath, DB_DIR]))?
-        .filter_map(map)
-        .collect()
+    fs::read_dir(PathBuf::from_iter([dbpath, DB_DIR]))?.filter_map(map).collect()
 }

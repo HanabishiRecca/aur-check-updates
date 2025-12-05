@@ -8,11 +8,7 @@ macro_rules! S {
 
 #[test]
 fn state() {
-    let pkgs = [
-        (S!("nop"), S!("1.0.0")),
-        (S!("foo"), S!("1.0.0")),
-        (S!("bar"), S!("1.0.0")),
-    ];
+    let pkgs = [(S!("nop"), S!("1.0.0")), (S!("foo"), S!("1.0.0")), (S!("bar"), S!("1.0.0"))];
 
     let updates = HashMap::from([
         (S!("nop"), S!("1.0.0")),
@@ -36,11 +32,7 @@ fn state() {
 
 #[test]
 fn partial_state() {
-    let pkgs = [
-        (S!("nop"), S!("1.0.0")),
-        (S!("foo"), S!("1.0.0")),
-        (S!("bar"), S!("1.0.0")),
-    ];
+    let pkgs = [(S!("nop"), S!("1.0.0")), (S!("foo"), S!("1.0.0")), (S!("bar"), S!("1.0.0"))];
 
     let updates = HashMap::from([
         (S!("nop"), S!("1.0.0")),
@@ -52,8 +44,5 @@ fn partial_state() {
     assert_eq!(count_updates(&state), 1);
 
     use Status::*;
-    assert_eq!(
-        state.as_ref(),
-        [Pkg::new(S!("foo"), S!("1.0.0"), HasUpdate(S!("2.0.0")))]
-    );
+    assert_eq!(state.as_ref(), [Pkg::new(S!("foo"), S!("1.0.0"), HasUpdate(S!("2.0.0")))]);
 }

@@ -16,18 +16,18 @@ struct Pkg {
     ver: Str,
 }
 
-pub fn url(endpoint: &str, pkgs: &[(impl AsRef<str>, impl AsRef<str>)]) -> Str {
-    let args = pkgs
-        .iter()
-        .flat_map(|(name, _)| ["&arg[]=", name.as_ref()].into_iter());
+impl Pkg {
+    fn into_kv(self) -> (Str, Str) {
+        (self.name, self.ver)
+    }
+}
 
+pub fn url(endpoint: &str, pkgs: &[(impl AsRef<str>, impl AsRef<str>)]) -> Str {
+    let args = pkgs.iter().flat_map(|(name, _)| ["&arg[]=", name.as_ref()].into_iter());
     [endpoint, "?"].into_iter().chain(args).collect()
 }
 
 pub fn parse(data: &str) -> Result<HashMap<Str, Str>, Error> {
-    Ok(serde_json::from_str::<Response>(data)?
-        .results
-        .into_iter()
-        .map(|pkg| (pkg.name, pkg.ver))
-        .collect())
+    let results = serde_json::from_str::<Response>(data)?.results;
+    Ok(results.into_iter().map(Pkg::into_kv).collect())
 }

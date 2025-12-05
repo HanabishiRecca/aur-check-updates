@@ -1,4 +1,5 @@
 use super::*;
+use std::iter;
 
 macro_rules! read_args {
     ($a: expr) => {
@@ -8,9 +9,7 @@ macro_rules! read_args {
 
 fn cmp(a: &[impl AsRef<str>], b: &[impl AsRef<str>]) {
     assert_eq!(a.len(), b.len());
-    for i in 0..a.len() {
-        assert_eq!(a[i].as_ref(), b[i].as_ref());
-    }
+    assert!(iter::zip(a, b).all(|(a, b)| a.as_ref() == b.as_ref()));
 }
 
 #[test]

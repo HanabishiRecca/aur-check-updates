@@ -10,7 +10,5 @@ pub fn to_hashset(source: &[impl AsRef<str>]) -> HashSet<&str> {
 }
 
 pub fn str_diff(a: &str, b: &str) -> usize {
-    iter::zip(a.bytes(), b.bytes())
-        .position(|(a, b)| a != b)
-        .unwrap_or_default()
+    iter::zip(a.bytes(), b.bytes()).position(|(a, b)| a != b).unwrap_or(0)
 }

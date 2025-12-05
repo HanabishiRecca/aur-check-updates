@@ -37,17 +37,13 @@ fn print_help() {
         include_str!("help.in"),
         PKG = env!("CARGO_PKG_NAME"),
         VER = env!("CARGO_PKG_VERSION"),
-        BIN_NAME = default!(
-            (|| bin.as_ref()?.file_name()?.to_str())(),
-            env!("CARGO_BIN_NAME")
-        ),
+        BIN_NAME = default!((|| bin.as_ref()?.file_name()?.to_str())(), env!("CARGO_BIN_NAME")),
     );
 }
 
-fn run() -> Result<(), Box<dyn Error>> {
+fn run() -> Result<bool, Box<dyn Error>> {
     let Some(config) = cli::read_args(env::args().skip(1))? else {
-        print_help();
-        return Ok(());
+        return Ok(true);
     };
 
     let raw = default!(config.raw(), DEFAULT_RAW);
@@ -66,10 +62,9 @@ fn run() -> Result<(), Box<dyn Error>> {
     let repos = default!(config.repos(), &io::find_repos(dbpath)?);
     let ignores = default!(config.ignores(), &utils::copy(DEFAULT_IGNORES));
     let ignore_groups = default!(config.ignore_groups(), &utils::copy(DEFAULT_IGNORE_GROUPS));
-    let ignore_suffixes = default!(
-        config.ignore_suffixes(),
-        &utils::copy(DEFAULT_IGNORE_SUFFIXES)
-    );
+    let ignore_suffixes = default!(config.ignore_suffixes(), &utils::copy(DEFAULT_IGNORE_SUFFIXES));
+    let show_updated = default!(config.show_updated(), DEFAULT_SHOW_UPDATED);
+    let show_failed = default!(config.show_failed(), DEFAULT_SHOW_FAILED);
 
     let packages =
         alpm::find_foreign_packages(dbpath, repos, ignores, ignore_groups, ignore_suffixes)?;
@@ -78,44 +73,38 @@ fn run() -> Result<(), Box<dyn Error>> {
         if !raw {
             print::message("no packages to check");
         }
-        return Ok(());
+        return Ok(false);
     }
 
     let url = aur::url(default!(config.endpoint(), DEFAULT_ENDPOINT), &packages);
     let response = request::send(&url, default!(config.timeout(), DEFAULT_TIMEOUT))?;
     let updates = aur::parse(core::str::from_utf8(&response)?)?;
-
-    let state = package::into_state(
-        packages,
-        updates,
-        default!(config.show_updated(), DEFAULT_SHOW_UPDATED),
-        default!(config.show_failed(), DEFAULT_SHOW_FAILED),
-    );
+    let state = package::into_state(packages, updates, show_updated, show_failed);
 
     if !raw && package::count_updates(&state) == 0 {
         print::message("no updates");
     }
 
-    let (nlen, vlen) = if raw {
-        (0, 0)
-    } else {
-        package::calc_lengths(&state)
-    };
+    let (nlen, vlen) = if raw { (0, 0) } else { package::calc_lengths(&state) };
 
     for pkg in state {
         pkg.print(nlen, vlen);
     }
 
-    Ok(())
+    Ok(false)
 }
 
 fn main() -> ExitCode {
     print::set_color_mode(DEFAULT_COLOR_MODE);
+
     match run() {
+        Ok(help) => {
+            help.then(print_help);
+            ExitCode::SUCCESS
+        }
         Err(e) => {
             print::error(e);
             ExitCode::FAILURE
         }
-        _ => ExitCode::SUCCESS,
     }
 }
