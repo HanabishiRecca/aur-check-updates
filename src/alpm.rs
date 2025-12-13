@@ -38,7 +38,7 @@ fn map_pkg(
     Some((Str::from(name), Str::from(pkg.version().as_str())))
 }
 
-pub fn find_foreign_packages(
+pub fn find(
     dbpath: &str, repos: &[impl AsRef<str>], ignores: &[impl AsRef<str>],
     ignore_groups: &[impl AsRef<str>], ignore_suffixes: &[impl AsRef<str>],
 ) -> Result<Arr<(Str, Str)>> {

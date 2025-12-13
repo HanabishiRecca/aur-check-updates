@@ -31,10 +31,8 @@ pub fn run() -> Result<bool, Box<dyn Error>> {
     };
 
     let raw = default!(config.raw(), DEFAULT_RAW);
-
-    let color_mode =
-        if raw { ColorMode::Never } else { default!(config.color_mode(), DEFAULT_COLOR_MODE) };
-    print::set_color_mode(color_mode);
+    let color_mode = default!(config.color_mode(), DEFAULT_COLOR_MODE);
+    print::set_color_mode(if raw { ColorMode::Never } else { color_mode });
 
     if !raw {
         print::header("Checking AUR updates...");
@@ -45,13 +43,7 @@ pub fn run() -> Result<bool, Box<dyn Error>> {
     let ignores = default!(config.ignores(), &utils::copy(DEFAULT_IGNORES));
     let ignore_groups = default!(config.ignore_groups(), &utils::copy(DEFAULT_IGNORE_GROUPS));
     let ignore_suffixes = default!(config.ignore_suffixes(), &utils::copy(DEFAULT_IGNORE_SUFFIXES));
-    let endpoint = default!(config.endpoint(), DEFAULT_ENDPOINT);
-    let timeout = default!(config.timeout(), DEFAULT_TIMEOUT);
-    let show_updated = default!(config.show_updated(), DEFAULT_SHOW_UPDATED);
-    let show_failed = default!(config.show_failed(), DEFAULT_SHOW_FAILED);
-
-    let packages =
-        alpm::find_foreign_packages(dbpath, repos, ignores, ignore_groups, ignore_suffixes)?;
+    let packages = alpm::find(dbpath, repos, ignores, ignore_groups, ignore_suffixes)?;
 
     if packages.is_empty() {
         if !raw {
@@ -60,8 +52,13 @@ pub fn run() -> Result<bool, Box<dyn Error>> {
         return Ok(false);
     }
 
+    let endpoint = default!(config.endpoint(), DEFAULT_ENDPOINT);
+    let timeout = default!(config.timeout(), DEFAULT_TIMEOUT);
     let response = request::send(endpoint, aur::args(&packages).as_bytes(), timeout)?;
+
     let updates = aur::parse(core::str::from_utf8(&response)?)?;
+    let show_updated = default!(config.show_updated(), DEFAULT_SHOW_UPDATED);
+    let show_failed = default!(config.show_failed(), DEFAULT_SHOW_FAILED);
     let state = package::into_state(packages, updates, show_updated, show_failed);
 
     if !raw && package::count_updates(&state) == 0 {
