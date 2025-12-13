@@ -1,9 +1,7 @@
 use crate::types::{Arr, Str};
-use std::{
-    fs::{self, DirEntry},
-    io::Result,
-    path::PathBuf,
-};
+use std::fs::{self, DirEntry};
+use std::io::Result;
+use std::path::PathBuf;
 
 const DB_DIR: &str = "sync";
 const DB_EXT: &str = ".db";
@@ -19,9 +17,7 @@ macro_rules! R {
 
 macro_rules! C {
     ($e: expr) => {
-        if !$e {
-            return None;
-        }
+        ($e).then_some(())?
     };
 }
 

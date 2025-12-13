@@ -1,11 +1,10 @@
 #[cfg(test)]
 mod tests;
 
-use crate::{
-    print,
-    types::{Arr, Str},
-};
-use std::{cmp::Ordering, collections::HashMap};
+use crate::print;
+use crate::types::{Arr, Str};
+use std::cmp::Ordering;
+use std::collections::HashMap;
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub enum Status {

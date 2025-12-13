@@ -1,5 +1,6 @@
 use crate::types::Arr;
-use curl::{Error, easy::Easy};
+use curl::Error;
+use curl::easy::Easy;
 use std::time::Duration;
 
 pub fn send(url: &str, timeout: u64) -> Result<Arr<u8>, Error> {

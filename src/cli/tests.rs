@@ -77,15 +77,15 @@ macro_rules! test_error {
 
 #[test]
 fn no_value() {
-    test_error!(["--ignore"], Error::NoValue(_));
+    test_error!(["--ignore"], CliError::NoValue(_));
 }
 
 #[test]
 fn invalid_value() {
-    test_error!(["--color", "foo"], Error::InvalidValue(_, _));
+    test_error!(["--color", "foo"], CliError::InvalidValue(_, _));
 }
 
 #[test]
 fn unknown_arg() {
-    test_error!(["--foo"], Error::Unknown(_));
+    test_error!(["--foo"], CliError::Unknown(_));
 }

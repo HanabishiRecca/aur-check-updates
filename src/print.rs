@@ -1,9 +1,18 @@
 use crate::utils;
-use std::{
-    fmt::Display,
-    io::{self, IsTerminal},
-    sync::atomic::{AtomicBool, Ordering},
-};
+use std::env;
+use std::fmt::Display;
+use std::io::{self, IsTerminal};
+use std::sync::atomic::{AtomicBool, Ordering};
+
+pub fn help() {
+    let bin = env::current_exe().ok();
+    println!(
+        include_str!("help.in"),
+        PKG = env!("CARGO_PKG_NAME"),
+        VER = env!("CARGO_PKG_VERSION"),
+        BIN_NAME = (|| bin.as_ref()?.file_name()?.to_str())().unwrap_or(env!("CARGO_BIN_NAME")),
+    );
+}
 
 static COLOR: AtomicBool = AtomicBool::new(false);
 

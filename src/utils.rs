@@ -1,5 +1,6 @@
 use crate::types::{Arr, Str};
-use std::{collections::HashSet, iter};
+use std::collections::HashSet;
+use std::iter;
 
 pub fn copy(input: &[impl AsRef<str>]) -> Arr<Str> {
     input.iter().map(AsRef::as_ref).map(Str::from).collect()

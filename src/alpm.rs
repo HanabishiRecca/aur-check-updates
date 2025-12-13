@@ -1,8 +1,6 @@
-use crate::{
-    print,
-    types::{Arr, Str},
-    utils,
-};
+use crate::print;
+use crate::types::{Arr, Str};
+use crate::utils;
 use alpm::{Alpm, AnyEvent, Db, Event, Package, Result, SigLevel};
 use std::collections::HashSet;
 

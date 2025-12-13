@@ -1,6 +1,6 @@
 use crate::types::{Arr, Str};
 use serde::Deserialize;
-use serde_json::{self, Error};
+use serde_json::Error;
 use std::collections::HashMap;
 
 #[derive(Deserialize)]
