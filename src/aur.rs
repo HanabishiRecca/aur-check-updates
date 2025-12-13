@@ -22,9 +22,8 @@ impl Pkg {
     }
 }
 
-pub fn url(endpoint: &str, pkgs: &[(impl AsRef<str>, impl AsRef<str>)]) -> Str {
-    let args = pkgs.iter().flat_map(|(name, _)| ["&arg[]=", name.as_ref()].into_iter());
-    [endpoint, "?"].into_iter().chain(args).collect()
+pub fn args(pkgs: &[(impl AsRef<str>, impl AsRef<str>)]) -> Str {
+    pkgs.iter().flat_map(|(name, _)| ["&arg[]=", name.as_ref()].into_iter()).collect()
 }
 
 pub fn parse(data: &str) -> Result<HashMap<Str, Str>, Error> {

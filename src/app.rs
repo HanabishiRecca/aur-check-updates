@@ -45,6 +45,8 @@ pub fn run() -> Result<bool, Box<dyn Error>> {
     let ignores = default!(config.ignores(), &utils::copy(DEFAULT_IGNORES));
     let ignore_groups = default!(config.ignore_groups(), &utils::copy(DEFAULT_IGNORE_GROUPS));
     let ignore_suffixes = default!(config.ignore_suffixes(), &utils::copy(DEFAULT_IGNORE_SUFFIXES));
+    let endpoint = default!(config.endpoint(), DEFAULT_ENDPOINT);
+    let timeout = default!(config.timeout(), DEFAULT_TIMEOUT);
     let show_updated = default!(config.show_updated(), DEFAULT_SHOW_UPDATED);
     let show_failed = default!(config.show_failed(), DEFAULT_SHOW_FAILED);
 
@@ -58,8 +60,7 @@ pub fn run() -> Result<bool, Box<dyn Error>> {
         return Ok(false);
     }
 
-    let url = aur::url(default!(config.endpoint(), DEFAULT_ENDPOINT), &packages);
-    let response = request::send(&url, default!(config.timeout(), DEFAULT_TIMEOUT))?;
+    let response = request::send(endpoint, aur::args(&packages).as_bytes(), timeout)?;
     let updates = aur::parse(core::str::from_utf8(&response)?)?;
     let state = package::into_state(packages, updates, show_updated, show_failed);
 
