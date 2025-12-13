@@ -1,12 +1,13 @@
 use crate::types::Arr;
 use curl::Error;
-use curl::easy::Easy;
+use curl::easy::{Easy, HttpVersion};
 use std::time::Duration;
 
 pub fn send(url: &str, timeout: u64) -> Result<Arr<u8>, Error> {
     let mut easy = Easy::new();
     easy.url(url)?;
     easy.get(true)?;
+    easy.http_version(HttpVersion::V11)?;
     easy.accept_encoding("")?;
     easy.fail_on_error(true)?;
     easy.tcp_nodelay(true)?;
