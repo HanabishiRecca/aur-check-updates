@@ -38,8 +38,8 @@ impl Pkg {
         matches!(self.status, Status::HasUpdate(_))
     }
 
-    fn lengths(&self) -> (usize, usize) {
-        (self.name.len(), self.ver.len())
+    fn max((nlen, vlen): (usize, usize), pkg: &Self) -> (usize, usize) {
+        (nlen.max(pkg.name.len()), vlen.max(pkg.ver.len()))
     }
 }
 
@@ -69,5 +69,5 @@ pub fn count_updates(state: &[Pkg]) -> usize {
 }
 
 pub fn calc_lengths(state: &[Pkg]) -> (usize, usize) {
-    state.iter().fold((0, 0), |prev, pkg| prev.max(pkg.lengths()))
+    state.iter().fold((0, 0), Pkg::max)
 }
