@@ -1,8 +1,7 @@
-use crate::print;
+use crate::package::Pkg;
 use crate::types::{Arr, Str};
-use crate::utils;
-use alpm::{Alpm, AnyEvent, Db, Event, Package, Result, SigLevel};
-use std::collections::HashSet;
+use crate::{print, utils};
+use alpm::{Alpm, AlpmList, AnyEvent, Db, Event, Package, Result, SigLevel};
 
 fn event(e: AnyEvent, _: &mut ()) {
     if let Event::DatabaseMissing(event) = e.event() {
@@ -10,42 +9,87 @@ fn event(e: AnyEvent, _: &mut ()) {
     }
 }
 
-fn init(dbpath: &str) -> Result<Alpm> {
-    let alpm = Alpm::new("/", dbpath)?;
-    alpm.set_event_cb((), event);
-    Ok(alpm)
+pub struct Query {
+    alpm: Alpm,
 }
 
-fn load_dbs<'a>(alpm: &'a Alpm, repos: &[impl AsRef<str>]) -> Result<Arr<&'a Db>> {
-    repos.iter().map(|repo| alpm.register_syncdb(repo.as_ref(), SigLevel::NONE)).collect()
+impl Query {
+    pub fn new(dbpath: &str) -> Result<Self> {
+        let alpm = Alpm::new("/", dbpath)?;
+        alpm.set_event_cb((), event);
+        Ok(Self { alpm })
+    }
+
+    fn load_db(&self, name: &str) -> Result<&Db> {
+        self.alpm.register_syncdb(name, SigLevel::NONE)
+    }
+
+    fn load_dbs(&self, repos: &[Str]) -> Result<Arr<&Db>> {
+        repos.iter().map(move |name| self.load_db(name)).collect()
+    }
+
+    fn pkgs(&self) -> AlpmList<'_, &Package> {
+        self.alpm.localdb().pkgs()
+    }
 }
 
-macro_rules! C {
-    ($e: expr) => {
-        ($e).then_some(())?
-    };
+struct Dbs<'a> {
+    dbs: Arr<&'a Db>,
 }
 
-fn map_pkg(
-    pkg: &Package, ignores: &HashSet<&str>, ignore_groups: &HashSet<&str>,
-    ignore_suffixes: &[impl AsRef<str>], dbs: &[&Db],
-) -> Option<(Str, Str)> {
-    let name = pkg.name();
-    C!(ignores.is_empty() || !ignores.contains(name));
-    C!(ignore_groups.is_empty() || !pkg.groups().iter().any(|g| ignore_groups.contains(g)));
-    C!(ignore_suffixes.is_empty() || !ignore_suffixes.iter().any(|s| name.ends_with(s.as_ref())));
-    C!(dbs.iter().all(|db| db.pkg(name).is_err()));
-    Some((Str::from(name), Str::from(pkg.version().as_str())))
+impl<'a> Dbs<'a> {
+    fn new(dbs: Arr<&'a Db>) -> Self {
+        Self { dbs }
+    }
+
+    fn has(&self, pkg: &Package) -> bool {
+        let name = pkg.name();
+        self.dbs.iter().any(move |db| db.pkg(name).is_ok())
+    }
+}
+pub struct Filter<'a> {
+    names: &'a [Str],
+    groups: &'a [Str],
+    suffixes: &'a [Str],
+}
+
+impl<'a> Filter<'a> {
+    pub fn new(names: &'a [Str], groups: &'a [Str], suffixes: &'a [Str]) -> Self {
+        Self { names, groups, suffixes }
+    }
+
+    fn has_name(&self, name: &str) -> bool {
+        utils::contains(self.names, name)
+    }
+
+    fn has_group(&self, group: &str) -> bool {
+        utils::contains(self.groups, group)
+    }
+
+    fn test_groups(&self, groups: AlpmList<&str>) -> bool {
+        !self.groups.is_empty() && groups.iter().any(move |group| self.has_group(group))
+    }
+
+    fn test_suffixes(&self, name: &str) -> bool {
+        self.suffixes.iter().any(move |suffix| name.ends_with(suffix.as_ref()))
+    }
+
+    fn test(&self, pkg: &Package) -> bool {
+        let name = pkg.name();
+        self.has_name(name) || self.test_groups(pkg.groups()) || self.test_suffixes(name)
+    }
+}
+
+fn to_pkg(pkg: &Package) -> Pkg {
+    Pkg::new(Str::from(pkg.name()), Str::from(pkg.version().as_str()))
 }
 
 pub fn find(
-    dbpath: &str, repos: &[impl AsRef<str>], ignores: &[impl AsRef<str>],
-    ignore_groups: &[impl AsRef<str>], ignore_suffixes: &[impl AsRef<str>],
-) -> Result<Arr<(Str, Str)>> {
-    let alpm = init(dbpath)?;
-    let dbs = load_dbs(&alpm, repos)?;
-    let ignores = utils::to_hashset(ignores);
-    let ignore_groups = utils::to_hashset(ignore_groups);
-    let map = move |pkg| map_pkg(pkg, &ignores, &ignore_groups, ignore_suffixes, &dbs);
-    Ok(alpm.localdb().pkgs().into_iter().filter_map(map).collect())
+    dbpath: &str, repos: &[Str], names: &[Str], groups: &[Str], suffixes: &[Str],
+) -> Result<Arr<Pkg>> {
+    let query = Query::new(dbpath)?;
+    let dbs = Dbs::new(query.load_dbs(repos)?);
+    let filter = Filter::new(names, groups, suffixes);
+    let pkgs = query.pkgs().into_iter().filter(move |pkg| !dbs.has(pkg) && !filter.test(pkg));
+    Ok(pkgs.map(to_pkg).collect())
 }

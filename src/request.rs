@@ -4,6 +4,7 @@ use curl::easy::{Easy, HttpVersion};
 use std::io::Read;
 use std::time::Duration;
 
+#[inline(never)]
 pub fn send(url: &str, body: &[u8], timeout: u64) -> Result<Arr<u8>, Error> {
     let mut easy = Easy::new();
     easy.url(url)?;
@@ -16,11 +17,11 @@ pub fn send(url: &str, body: &[u8], timeout: u64) -> Result<Arr<u8>, Error> {
     easy.useragent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))?;
     easy.post_field_size(body.len() as u64)?;
 
-    let mut request = body;
+    let mut cursor = body;
     let mut result = Vec::new();
     let mut transfer = easy.transfer();
 
-    transfer.read_function(|buf| Ok(request.read(buf).unwrap_or(0)))?;
+    transfer.read_function(move |buf| Ok(cursor.read(buf).unwrap_or(0)))?;
 
     transfer.write_function(|data| {
         result.extend_from_slice(data);

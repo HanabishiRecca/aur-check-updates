@@ -17,20 +17,39 @@ pub enum Status {
 pub struct Pkg {
     name: Str,
     ver: Str,
-    status: Status,
 }
 
 impl Pkg {
-    pub fn new(name: Str, ver: Str, status: Status) -> Self {
-        Pkg { name, ver, status }
+    pub fn new(name: Str, ver: Str) -> Self {
+        Self { name, ver }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn ver(&self) -> &str {
+        &self.ver
+    }
+}
+
+#[cfg_attr(test, derive(Debug, PartialEq))]
+pub struct Record {
+    pkg: Pkg,
+    status: Status,
+}
+
+impl Record {
+    fn new(pkg: Pkg, status: Status) -> Self {
+        Self { pkg, status }
     }
 
     pub fn print(&self, nlen: usize, vlen: usize) {
         use Status::*;
         match &self.status {
-            UpToDate => print::package(&self.name, &self.ver, nlen),
-            HasUpdate(new_ver) => print::update(&self.name, &self.ver, new_ver, nlen, vlen),
-            NotInAUR => print::not_found(&self.name, &self.ver, nlen, vlen),
+            UpToDate => print::package(&self.pkg, nlen),
+            HasUpdate(new_ver) => print::update(&self.pkg, new_ver, nlen, vlen),
+            NotInAUR => print::not_found(&self.pkg, nlen, vlen),
         }
     }
 
@@ -38,36 +57,62 @@ impl Pkg {
         matches!(self.status, Status::HasUpdate(_))
     }
 
-    fn max((nlen, vlen): (usize, usize), pkg: &Self) -> (usize, usize) {
-        (nlen.max(pkg.name.len()), vlen.max(pkg.ver.len()))
+    fn max_len(&self, (nlen, vlen): (usize, usize)) -> (usize, usize) {
+        (nlen.max(self.pkg.name().len()), vlen.max(self.pkg.ver().len()))
     }
 }
 
-fn map_update(
-    name: Str, ver: Str, updates: &mut HashMap<Str, Str>, keep_updated: bool, keep_failed: bool,
-) -> Option<Pkg> {
-    use Status::*;
-    match updates.remove(&name) {
-        Some(new_ver) => match alpm::vercmp(new_ver.as_ref(), ver.as_ref()) {
-            Ordering::Greater => Some(Pkg::new(name, ver, HasUpdate(new_ver))),
-            _ => keep_updated.then_some(Pkg::new(name, ver, UpToDate)),
-        },
-        _ => keep_failed.then_some(Pkg::new(name, ver, NotInAUR)),
+pub struct State {
+    updates: Arr<Record>,
+}
+
+impl State {
+    fn new(pkgs: Arr<Record>) -> Self {
+        Self { updates: pkgs }
+    }
+
+    pub fn has_updates(&self) -> bool {
+        self.updates.iter().any(Record::has_update)
+    }
+
+    pub fn lengths(&self) -> (usize, usize) {
+        self.updates.iter().fold((0, 0), |acc, pkg| pkg.max_len(acc))
+    }
+
+    pub fn into_records(self) -> Arr<Record> {
+        self.updates
+    }
+}
+
+struct Task {
+    updates: HashMap<Str, Str>,
+    keep_updated: bool,
+    keep_failed: bool,
+}
+
+impl Task {
+    fn new(updates: HashMap<Str, Str>, keep_updated: bool, keep_failed: bool) -> Self {
+        Self { updates, keep_updated, keep_failed }
+    }
+
+    fn map_update(&mut self, pkg: Pkg) -> Option<Record> {
+        use Status::*;
+        match self.updates.remove(pkg.name()) {
+            Some(new_ver) => match alpm::vercmp(new_ver.as_ref(), pkg.ver()) {
+                Ordering::Greater => Some(Record::new(pkg, HasUpdate(new_ver))),
+                _ => self.keep_updated.then_some(Record::new(pkg, UpToDate)),
+            },
+            _ => self.keep_failed.then_some(Record::new(pkg, NotInAUR)),
+        }
+    }
+
+    fn into_state(mut self, pkgs: Arr<Pkg>) -> State {
+        State::new(pkgs.into_iter().filter_map(|pkg| self.map_update(pkg)).collect())
     }
 }
 
 pub fn into_state(
-    packages: impl IntoIterator<Item = (Str, Str)>, mut updates: HashMap<Str, Str>,
-    keep_updated: bool, keep_failed: bool,
-) -> Arr<Pkg> {
-    let map = move |(name, ver)| map_update(name, ver, &mut updates, keep_updated, keep_failed);
-    packages.into_iter().filter_map(map).collect()
-}
-
-pub fn count_updates(state: &[Pkg]) -> usize {
-    state.iter().filter(|pkg| pkg.has_update()).count()
-}
-
-pub fn calc_lengths(state: &[Pkg]) -> (usize, usize) {
-    state.iter().fold((0, 0), Pkg::max)
+    pkgs: Arr<Pkg>, updates: HashMap<Str, Str>, keep_updated: bool, keep_failed: bool,
+) -> State {
+    Task::new(updates, keep_updated, keep_failed).into_state(pkgs)
 }

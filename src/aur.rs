@@ -1,32 +1,33 @@
+use crate::package::Pkg;
 use crate::types::{Arr, Str};
 use serde::Deserialize;
-use serde_json::Error;
+use serde_json::Result;
 use std::collections::HashMap;
 
 #[derive(Deserialize)]
-struct Response {
-    results: Arr<Pkg>,
-}
-
-#[derive(Deserialize)]
-struct Pkg {
+struct Info {
     #[serde(rename = "Name")]
     name: Str,
     #[serde(rename = "Version")]
     ver: Str,
 }
 
-impl Pkg {
+impl Info {
     fn into_kv(self) -> (Str, Str) {
         (self.name, self.ver)
     }
 }
 
-pub fn args(pkgs: &[(impl AsRef<str>, impl AsRef<str>)]) -> Str {
-    pkgs.iter().flat_map(|(name, _)| ["&arg[]=", name.as_ref()].into_iter()).collect()
+#[derive(Deserialize)]
+struct Response {
+    results: Arr<Info>,
 }
 
-pub fn parse(data: &str) -> Result<HashMap<Str, Str>, Error> {
+pub fn args(pkgs: &[Pkg]) -> Str {
+    pkgs.iter().flat_map(|pkg| ["&arg[]=", pkg.name()]).collect()
+}
+
+pub fn parse(data: &str) -> Result<HashMap<Str, Str>> {
     let results = serde_json::from_str::<Response>(data)?.results;
-    Ok(results.into_iter().map(Pkg::into_kv).collect())
+    Ok(results.into_iter().map(Info::into_kv).collect())
 }

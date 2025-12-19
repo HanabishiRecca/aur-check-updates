@@ -40,10 +40,10 @@ pub fn run() -> Result<bool, Box<dyn Error>> {
 
     let dbpath = default!(config.dbpath(), DEFAULT_DBPATH);
     let repos = default!(config.repos(), &io::find_repos(dbpath)?);
-    let ignores = default!(config.ignores(), &utils::copy(DEFAULT_IGNORES));
-    let ignore_groups = default!(config.ignore_groups(), &utils::copy(DEFAULT_IGNORE_GROUPS));
-    let ignore_suffixes = default!(config.ignore_suffixes(), &utils::copy(DEFAULT_IGNORE_SUFFIXES));
-    let packages = alpm::find(dbpath, repos, ignores, ignore_groups, ignore_suffixes)?;
+    let names = default!(config.ignores(), &utils::to_arr(DEFAULT_IGNORES));
+    let groups = default!(config.ignore_groups(), &utils::to_arr(DEFAULT_IGNORE_GROUPS));
+    let suffixes = default!(config.ignore_suffixes(), &utils::to_arr(DEFAULT_IGNORE_SUFFIXES));
+    let packages = alpm::find(dbpath, repos, names, groups, suffixes)?;
 
     if packages.is_empty() {
         if !raw {
@@ -61,14 +61,14 @@ pub fn run() -> Result<bool, Box<dyn Error>> {
     let show_failed = default!(config.show_failed(), DEFAULT_SHOW_FAILED);
     let state = package::into_state(packages, updates, show_updated, show_failed);
 
-    if !raw && package::count_updates(&state) == 0 {
+    if !raw && !state.has_updates() {
         print::message("no updates");
     }
 
-    let (nlen, vlen) = if raw { (0, 0) } else { package::calc_lengths(&state) };
+    let (nlen, vlen) = if raw { (0, 0) } else { state.lengths() };
 
-    for pkg in state {
-        pkg.print(nlen, vlen);
+    for record in state.into_records() {
+        record.print(nlen, vlen);
     }
 
     Ok(false)

@@ -1,3 +1,4 @@
+use crate::package::Pkg;
 use crate::utils;
 use std::env;
 use std::fmt::Display;
@@ -26,14 +27,12 @@ pub enum ColorMode {
 
 pub fn set_color_mode(mode: ColorMode) {
     use ColorMode::*;
-    COLOR.store(
-        match mode {
-            Auto => io::stdout().is_terminal(),
-            Always => true,
-            Never => false,
-        },
-        Ordering::Relaxed,
-    );
+    let color = match mode {
+        Auto => io::stdout().is_terminal(),
+        Always => true,
+        Never => false,
+    };
+    COLOR.store(color, Ordering::Relaxed);
 }
 
 macro_rules! print_to {
@@ -43,61 +42,62 @@ macro_rules! print_to {
     };
 }
 
-macro_rules! P {
+macro_rules! stdout {
     ($n: expr, $c: expr  $(, $rest: expr)* $(,)?) => {
         print_to!(println, $n, $c $(, $rest)*)
     };
 }
 
-macro_rules! E {
+macro_rules! stderr {
     ($n: expr, $c: expr  $(, $rest: expr)* $(,)?) => {
         print_to!(eprintln, $n, $c $(, $rest)*)
     };
 }
 
 pub fn header(s: &str) {
-    P!(":: {s}", "\x1b[34;1m::\x1b[0;1m {s}\x1b[0m");
+    stdout!(":: {s}", "\x1b[34;1m::\x1b[0;1m {s}\x1b[0m");
 }
 
 pub fn message(s: &str) {
-    P!(" {s}", "\x1b[0m {s}\x1b[0m");
+    stdout!(" {s}", "\x1b[0m {s}\x1b[0m");
 }
 
-pub fn package(name: &str, ver: &str, nlen: usize) {
-    P!("{name:0$} {ver}", "\x1b[0;1m{name:0$} \x1b[32;1m{ver}\x1b[0m", nlen);
+pub fn package(pkg: &Pkg, nlen: usize) {
+    stdout!("{:nlen$} {}", "\x1b[0;1m{:nlen$} \x1b[32;1m{}\x1b[0m", pkg.name(), pkg.ver());
 }
 
-pub fn update(name: &str, ver: &str, new: &str, nlen: usize, vlen: usize) {
+pub fn update(pkg: &Pkg, ver: &str, nlen: usize, vlen: usize) {
     if !COLOR.load(Ordering::Relaxed) {
-        println!("{name:0$} {ver:1$} -> {new}", nlen, vlen);
+        println!("{:nlen$} {:vlen$} -> {ver}", pkg.name(), pkg.ver());
         return;
     }
 
-    let pos = utils::str_diff(ver, new);
-    let (va, vb) = ver.split_at(pos);
-    let (na, nb) = new.split_at(pos);
+    let pos = utils::str_diff(pkg.ver(), ver);
+    let (va, vb) = pkg.ver().split_at(pos);
+    let (na, nb) = ver.split_at(pos);
 
     println!(
-        "\x1b[0;1m{name:0$} {va}\x1b[31;1m{vb:1$}\x1b[0m -> \x1b[0;1m{na}\x1b[32;1m{nb}\x1b[0m",
-        nlen,
+        "\x1b[0;1m{:nlen$} {va}\x1b[31;1m{vb:1$}\x1b[0m -> \x1b[0;1m{na}\x1b[32;1m{nb}\x1b[0m",
+        pkg.name(),
         vlen - va.len(),
     );
 }
 
-pub fn not_found(name: &str, ver: &str, nlen: usize, vlen: usize) {
+pub fn not_found(pkg: &Pkg, nlen: usize, vlen: usize) {
     const MESSAGE: &str = "[not found in AUR]";
-    P!(
-        "{name:0$} {ver:1$} -> {MESSAGE}",
-        "\x1b[0;1m{name:0$} \x1b[31;1m{ver:1$}\x1b[0m -> \x1b[2m{MESSAGE}\x1b[0m",
-        nlen,
-        vlen,
+    stdout!(
+        "{:nlen$} {:vlen$} -> {MESSAGE}",
+        "\x1b[0;1m{:nlen$} \x1b[31;1m{:vlen$}\x1b[0m -> \x1b[2m{MESSAGE}\x1b[0m",
+        pkg.name(),
+        pkg.ver(),
     );
 }
 
+#[cold]
 pub fn error(e: impl Display) {
-    E!("error: {e}", "\x1b[31;1merror:\x1b[0m {e}\x1b[0m");
+    stderr!("error: {e}", "\x1b[31;1merror:\x1b[0m {e}\x1b[0m");
 }
 
 pub fn warning(w: impl Display) {
-    E!("warning: {w}", "\x1b[33;1mwarning:\x1b[0m {w}\x1b[0m");
+    stderr!("warning: {w}", "\x1b[33;1mwarning:\x1b[0m {w}\x1b[0m");
 }

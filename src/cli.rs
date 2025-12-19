@@ -88,14 +88,14 @@ impl Display for CliError {
     }
 }
 
-macro_rules! E {
+macro_rules! err {
     ($e: expr) => {{
         use CliError::*;
         return Err($e);
     }};
 }
 
-macro_rules! F {
+macro_rules! from {
     ($s: expr) => {
         From::from($s.as_ref())
     };
@@ -105,6 +105,7 @@ fn parse_list<'a, T: FromIterator<impl From<&'a str>>>(str: &'a str) -> T {
     str.split(',').filter(|s| !s.is_empty()).map(From::from).collect()
 }
 
+#[inline(never)]
 pub fn read_args(
     mut args: impl Iterator<Item = impl AsRef<str>>,
 ) -> Result<Option<Config>, CliError> {
@@ -115,7 +116,7 @@ pub fn read_args(
             () => {
                 match args.next() {
                     Some(value) => value,
-                    _ => E!(NoValue(F!(arg))),
+                    _ => err!(NoValue(from!(arg))),
                 }
             };
         }
@@ -148,30 +149,30 @@ pub fn read_args(
                     "auto" => Auto,
                     "always" => Always,
                     "never" => Never,
-                    _ => E!(InvalidValue(F!(arg), F!(value))),
+                    _ => err!(InvalidValue(from!(arg), from!(value))),
                 });
             }
             "--dbpath" => {
-                config.dbpath = Some(F!(next!()));
+                config.dbpath = Some(from!(next!()));
             }
             "--repos" => {
                 config.repos = Some(list!());
             }
             "--endpoint" => {
-                config.endpoint = Some(F!(next!()));
+                config.endpoint = Some(from!(next!()));
             }
             "--timeout" => {
                 let value = next!();
                 config.timeout = Some(match value.as_ref().parse() {
                     Ok(t) => t,
-                    _ => E!(InvalidValue(F!(arg), F!(value))),
+                    _ => err!(InvalidValue(from!(arg), from!(value))),
                 });
             }
             "--raw" => {
                 config.raw = Some(true);
             }
             "-h" | "--help" => return Ok(None),
-            _ => E!(Unknown(F!(arg))),
+            _ => err!(Unknown(from!(arg))),
         }
     }
 

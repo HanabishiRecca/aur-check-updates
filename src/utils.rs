@@ -1,13 +1,12 @@
 use crate::types::{Arr, Str};
-use std::collections::HashSet;
 use std::iter;
 
-pub fn copy(input: &[impl AsRef<str>]) -> Arr<Str> {
+pub fn to_arr(input: &[impl AsRef<str>]) -> Arr<Str> {
     input.iter().map(AsRef::as_ref).map(Str::from).collect()
 }
 
-pub fn to_hashset(source: &[impl AsRef<str>]) -> HashSet<&str> {
-    HashSet::from_iter(source.iter().map(AsRef::as_ref))
+pub fn contains(list: &[impl AsRef<str>], value: &str) -> bool {
+    list.iter().any(move |v| v.as_ref() == value)
 }
 
 pub fn str_diff(a: &str, b: &str) -> usize {
