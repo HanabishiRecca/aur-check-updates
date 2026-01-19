@@ -67,8 +67,8 @@ pub struct State {
 }
 
 impl State {
-    fn new(pkgs: Arr<Record>) -> Self {
-        Self { updates: pkgs }
+    fn new(updates: Arr<Record>) -> Self {
+        Self { updates }
     }
 
     pub fn has_updates(&self) -> bool {
