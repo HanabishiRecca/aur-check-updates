@@ -24,7 +24,14 @@ struct Response {
 }
 
 pub fn args(pkgs: &[Pkg]) -> Str {
-    pkgs.iter().flat_map(|pkg| ["&arg[]=", pkg.name()]).collect()
+    let mut result = String::with_capacity(pkgs.len() * 32);
+
+    for pkg in pkgs {
+        result.push_str("&arg[]=");
+        result.extend(form_urlencoded::byte_serialize(pkg.name().as_bytes()));
+    }
+
+    Str::from(result)
 }
 
 pub fn parse(data: &str) -> Result<HashMap<Str, Str>> {
