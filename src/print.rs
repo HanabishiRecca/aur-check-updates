@@ -1,9 +1,9 @@
 use crate::package::Pkg;
 use crate::utils;
+use std::cell::Cell;
 use std::env;
 use std::fmt::Display;
 use std::io::{self, IsTerminal};
-use std::sync::atomic::{AtomicBool, Ordering};
 
 pub fn help() {
     let bin = env::current_exe().ok();
@@ -15,7 +15,9 @@ pub fn help() {
     );
 }
 
-static COLOR: AtomicBool = AtomicBool::new(false);
+thread_local! {
+    static COLOR: Cell<bool> = const { Cell::new(false) };
+}
 
 #[derive(Clone, Copy)]
 #[cfg_attr(test, derive(Debug, PartialEq))]
@@ -32,12 +34,12 @@ pub fn set_color_mode(mode: ColorMode) {
         Always => true,
         Never => false,
     };
-    COLOR.store(color, Ordering::Relaxed);
+    COLOR.set(color);
 }
 
 macro_rules! print_to {
     ($p: ident, $n: expr, $c: expr $(, $rest: expr)* $(,)?) => {
-        if COLOR.load(Ordering::Relaxed) { $p!($c $(, $rest)*) }
+        if COLOR.get() { $p!($c $(, $rest)*) }
         else { $p!($n  $(, $rest)*) }
     };
 }
@@ -67,7 +69,7 @@ pub fn package(pkg: &Pkg, nlen: usize) {
 }
 
 pub fn update(pkg: &Pkg, ver: &str, nlen: usize, vlen: usize) {
-    if !COLOR.load(Ordering::Relaxed) {
+    if !COLOR.get() {
         println!("{:nlen$} {:vlen$} -> {ver}", pkg.name(), pkg.ver());
         return;
     }
