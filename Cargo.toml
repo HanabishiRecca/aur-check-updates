@@ -11,7 +11,7 @@ publish = false
 
 [profile.release]
 panic = "abort"
-opt-level = 2
+opt-level = 3
 lto = true
 codegen-units = 1
 
